@@ -2,7 +2,7 @@
 
 A hands-on introduction to scripting behavioural experiments in Python with PsychoPy, and to analysing the data they produce in R. Written for research interns in the Discipline of Psychology, Curtin University.
 
-**Live site:** https://wmarinovic.github.io/REPO-NAME/
+**Live site:** https://wmarinovic.github.io/Neuro_internship/
 
 Written for PsychoPy Studio 2026.1.x on Python 3.10, and for R 4.6.x with RStudio.
 
