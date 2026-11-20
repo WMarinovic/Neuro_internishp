@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Module 1: Your first Python script | Coding Experiments in PsychoPy</title>
+<meta name="description" content="Write the smallest PsychoPy program: a window, a message and a keypress.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 22'><rect width='32' height='22' rx='2' fill='%23808080'/><circle cx='16' cy='11' r='4' fill='white'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="index.html"><span class="wordmark-glyph" aria-hidden="true"></span>Coding Experiments in PsychoPy</a>
+    <nav class="topnav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="index.html#modules">Modules</a>
+      <a href="troubleshooting.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="module-banner">
+    <div class="module-head">
+      <div>
+        <p class="kicker">Module 1</p>
+        <h1>Your first Python script</h1>
+        <p class="lede">You learn the handful of Python ideas every experiment uses, then write the smallest PsychoPy program that opens a window, shows a message, waits for a key and closes down cleanly.</p>
+        <p class="build-line"><b>You will finish with</b> a script that opens a window, shows a message and waits for a key. <span class="lang py">Python</span></p>
+      </div>
+      <div class="banner-art" data-thumb="1"></div>
+    </div>
+  </div>
+
+  <div class="module-body">
+    <nav class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <p class="toc-part py">The Python you need</p>
+      <ol>
+        <li><a href="#values">1.1 Values and variables</a></li>
+        <li><a href="#lists">1.2 Lists</a></li>
+        <li><a href="#dicts">1.3 Dictionaries</a></li>
+        <li><a href="#loops">1.4 Loops, decisions, functions</a></li>
+      </ol>
+      <p class="toc-part py">Your first PsychoPy script</p>
+      <ol>
+        <li><a href="#whole-program">1.5 The whole program</a></li>
+        <li><a href="#taking-apart">1.6 Taking it apart</a></li>
+        <li><a href="#own">1.7 Make it your own</a></li>
+      </ol>
+      <ol>
+        <li><a href="#checks">Before you move on</a></li>
+      </ol>
+    </nav>
+
+    <article class="content">
+
+      <section class="part-py" aria-labelledby="part-1p">
+        <h2 class="part" id="part-1p">The Python you need <span class="lang py">Python</span></h2>
+        <p>PsychoPy experiments are ordinary Python, and this module uses only a small part of the language. If you have written Python before, skim this part and go on to 1.5. If you have not, work through it first: the four boxes below run real Python in your browser, so you can change the code and see what happens without installing anything.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>PsychoPy itself cannot run in a browser, because it needs a real window on a real screen. The boxes here run plain Python only. From 1.5 onwards you type the code into the PsychoPy Coder on your own computer.</p>
+        </div>
+
+        <h3 id="values"><span class="secnum">1.1</span>Values and variables</h3>
+        <p>A variable is a name for a value. You create one with a single <code>=</code>, and from then on the name stands for the value. Numbers with a decimal point are <code>float</code>s, whole numbers are <code>int</code>s, and text in quotes is a string, <code>str</code>. An f-string, a string with an <code>f</code> in front, lets you drop values into text inside curly brackets, and <code>:.0f</code> rounds to no decimal places.</p>
+        <div class="pycell" id="py-values">
+          <div class="editor-tab"><span class="file">scratch.py, in your browser</span><span class="lang-tag">Python</span></div>
+          <textarea class="rcell-code" rows="8" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Python code you can edit and run">participant = "P01"
+rt = 0.512           # seconds
+n_trials = 672
+
+print(participant, "responded in", rt, "seconds")
+print(f"That is {rt * 1000:.0f} ms, on trial 1 of {n_trials}")
+print(type(rt), type(participant))</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre></div>
+        </div>
+
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Values typed into PsychoPy’s participant dialog, or read from a CSV, arrive as strings. Add the line <code>print("2" + 1)</code> and run it. What goes wrong, and how would you fix it?</p>
+          <details class="reveal"><summary>Show the answer</summary>
+            <p>Python refuses to add a string and a number and raises a <code>TypeError</code>. Convert first: <code>print(int("2") + 1)</code> prints 3. The same conversion is why Module 6 writes <code>int(slider.getRating())</code>.</p>
+          </details>
+        </div>
+
+        <h3 id="lists"><span class="secnum">1.2</span>Lists</h3>
+        <p>A list holds several values in order, inside square brackets. You reach one item by its position, its <em>index</em>, and Python counts from 0, so the first item is <code>[0]</code>. A negative index counts from the end, and <code>[:4]</code> takes a slice. The last two lines are exactly how the serial reaction time task in Module 4 turns a position from 1 to 4 into a key.</p>
+        <div class="pycell" id="py-lists">
+          <div class="editor-tab"><span class="file">scratch.py, in your browser</span><span class="lang-tag">Python</span></div>
+          <textarea class="rcell-code" rows="11" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Python code you can edit and run">SEQUENCE = [2, 3, 1, 4, 3, 2, 4, 1, 3, 4, 2, 1]
+
+print(len(SEQUENCE))      # how many items
+print(SEQUENCE[0])        # the first item: lists count from 0
+print(SEQUENCE[-1])       # the last item
+print(SEQUENCE[:4])       # the first four
+
+RESP_KEYS = ['d', 'f', 'j', 'k']
+pos = 3
+print("Position", pos, "is answered with", RESP_KEYS[pos - 1])</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre></div>
+        </div>
+
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Change <code>pos = 3</code> to <code>pos = 5</code> and run it again. What happens, and why?</p>
+          <details class="reveal"><summary>Show the answer</summary>
+            <p><code>IndexError: list index out of range</code>. Position 5 asks for <code>RESP_KEYS[4]</code>, but a four-item list only has indices 0 to 3.</p>
+          </details>
+        </div>
+
+        <h3 id="dicts"><span class="secnum">1.3</span>Dictionaries</h3>
+        <p>A dictionary stores values under names, called keys, inside curly brackets. You look a value up by its key rather than its position. Every experiment on this site keeps the participant details in a dictionary called <code>info</code>, and PsychoPy reads a stimulus file as a list of dictionaries, one per row. The last two lines are a list comprehension: it takes each row in turn, pulls out its word, and collects the results in a new list.</p>
+        <div class="pycell" id="py-dicts">
+          <div class="editor-tab"><span class="file">scratch.py, in your browser</span><span class="lang-tag">Python</span></div>
+          <textarea class="rcell-code" rows="11" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Python code you can edit and run">info = {'participant': 'P01', 'session': '001'}
+print(info['participant'])
+
+info['date'] = '2026-11-20'      # add a new key
+print(info)
+
+# a list of dictionaries, the shape data.importConditions() gives you
+rows = [{'word': 'anchor'}, {'word': 'apple'}, {'word': 'basket'}]
+words = [row['word'] for row in rows]
+print(words)</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre></div>
+        </div>
+
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Change <code>info['participant']</code> to <code>info['Participant']</code>. What error do you get?</p>
+          <details class="reveal"><summary>Show the answer</summary>
+            <p><code>KeyError: 'Participant'</code>. Keys must match exactly, capitals included. It is the single commonest error when reading a conditions file, as Module 2 explains.</p>
+          </details>
+        </div>
+
+        <h3 id="loops"><span class="secnum">1.4</span>Loops, decisions and functions</h3>
+        <p>A <code>for</code> loop runs the indented lines once for each item in a list. <code>enumerate(..., start=1)</code> also counts the passes, which gives you a trial number for free. <code>if</code> and <code>else</code> choose between two blocks; note the double <code>==</code> when you compare and the single <code>=</code> when you assign. <code>def</code> wraps lines in a function you can call by name, and <code>return</code> hands back its result. Python decides what belongs inside a loop, an <code>if</code> or a function by the indentation alone, so keep it to four spaces.</p>
+        <div class="pycell" id="py-loops">
+          <div class="editor-tab"><span class="file">scratch.py, in your browser</span><span class="lang-tag">Python</span></div>
+          <textarea class="rcell-code" rows="20" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Python code you can edit and run">import random
+
+RESP_KEYS = ['d', 'f', 'j', 'k']
+
+def make_positions(n):
+    """Return n random positions from 1 to 4."""
+    return [random.choice([1, 2, 3, 4]) for _ in range(n)]
+
+positions = make_positions(5)
+
+for trial, pos in enumerate(positions, start=1):
+    key = RESP_KEYS[pos - 1]
+    if pos &lt;= 2:
+        hand = "left"
+    else:
+        hand = "right"
+    print(f"Trial {trial}: position {pos}, press {key} with the {hand} hand")
+
+print("Done")      # not indented, so it runs once, after the loop</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre></div>
+        </div>
+
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Indent the last line, <code>print("Done")</code>, by four spaces so it sits inside the loop, and run it again. What changes?</p>
+          <details class="reveal"><summary>Show the answer</summary>
+            <p>“Done” now prints after every trial instead of once at the end, because the indentation put it inside the loop. A line at the wrong indentation is not an error, so Python cannot warn you; it simply runs at the wrong time.</p>
+          </details>
+        </div>
+        <p>That is all the Python the rest of these modules assume. Everything else is introduced where it is first used.</p>
+      </section>
+
+      <section class="part-py" aria-labelledby="part-1">
+        <h2 class="part" id="part-1">Your first PsychoPy script <span class="lang py">Python</span></h2>
+        <p>Every PsychoPy experiment, however elaborate, is built from the same few moves: open a window, draw something to a hidden buffer, flip that buffer onto the screen, wait for an event, and eventually close down cleanly. In this module you write the smallest program that does all of these, then take it apart line by line.</p>
+
+        <h3 id="whole-program"><span class="secnum">1.5</span>The whole program</h3>
+        <p>In the Coder, create a file called <code>first_experiment.py</code> and type this in:</p>
+<pre class="code" data-lang="Python" data-file="first_experiment.py"><code class="language-python">from psychopy import visual, core, event
+
+# 1. Open a window
+win = visual.Window(
+    size=[1280, 720],
+    fullscr=False,
+    color='black',
+    units='height'
+)
+
+# 2. Create a piece of text
+message = visual.TextStim(
+    win,
+    text="Welcome.\n\nPress SPACE to continue, or ESC to quit.",
+    color='white',
+    height=0.05
+)
+
+# 3. Show it and wait for a response
+message.draw()
+win.flip()
+keys = event.waitKeys(keyList=['space', 'escape'])
+
+# 4. Close down
+if 'escape' in keys:
+    print("Participant quit early.")
+win.close()
+core.quit()</code></pre>
+        <p>Run it with the green Run button. A black window opens, your message appears in white, and the program waits. Press space and the window closes; press escape and you see the quit message in the output pane first.</p>
+
+        <h3 id="taking-apart"><span class="secnum">1.6</span>Taking it apart</h3>
+        <p>The first line imports three modules. <code>visual</code> holds anything you draw, <code>core</code> holds timing and the clean-exit function, and <code>event</code> reads the keyboard. Module 2 replaces <code>event</code> with a more precise keyboard tool, but it is perfect for a first look.</p>
+        <p>The <code>Window</code> is the canvas. We asked for a windowed 1280 by 720 pixel display while developing, which is far easier than a full-screen window you cannot click out of. For real data collection you would set <code>fullscr=True</code> so nothing else is visible. The <code>units='height'</code> choice matters more than it looks: it means every size and position you give from now on is measured as a fraction of the window’s height, so your stimuli stay correctly proportioned on any screen.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>In height units, the screen runs from −0.5 to +0.5 vertically, and the centre is (0, 0). A text height of 0.05 is therefore one twentieth of the screen height, which is comfortably readable.</p>
+        </div>
+        <p>Nothing appears the moment you create the <code>TextStim</code>. Drawing in PsychoPy is a two-step affair. <code>message.draw()</code> paints the text onto a hidden back buffer, and <code>win.flip()</code> swaps that buffer onto the visible screen in one go, synchronised to the monitor’s refresh. This is why animation in PsychoPy never tears or flickers: you build the whole frame in the dark, then reveal it all at once.</p>
+
+        <div class="demo-block" id="demo-flip">
+          <p class="demo-title"><b>Try it: draw, then flip.</b> Run the lines in any order and watch what the participant would see. <code>title</code> is a second text stimulus near the top of the window.</p>
+          <div class="demo-controls">
+            <button type="button" class="btn" data-act="message"><code>message.draw()</code></button>
+            <button type="button" class="btn" data-act="title"><code>title.draw()</code></button>
+            <button type="button" class="btn primary" data-act="flip"><code>win.flip()</code></button>
+            <button type="button" class="btn" data-act="reset">Start again</button>
+          </div>
+          <div class="fb-wrap">
+            <div class="fb-panel"><h4>Back buffer (hidden)</h4><div class="fb-box back" id="fb-back"></div></div>
+            <div class="fb-panel"><h4>Screen (what the participant sees)</h4><div class="fb-box front" id="fb-screen"></div></div>
+          </div>
+          <div class="fb-log" id="fb-log" aria-live="polite"></div>
+          <p class="demo-note-line" id="fb-note" aria-live="polite"></p>
+        </div>
+
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>If you call <code>draw()</code> but forget <code>win.flip()</code>, you will stare at a blank window and conclude the program is broken. It is not. You simply never turned the lights on. Every visible change needs a flip.</p>
+        </div>
+        <p><code>event.waitKeys(keyList=['space', 'escape'])</code> pauses the program until one of the listed keys is pressed, and hands back a list of the keys it saw. Restricting the list means a stray key press cannot skip your instructions by accident.</p>
+        <p>Finally, <code>win.close()</code> shuts the window and <code>core.quit()</code> ends the program tidily, releasing the screen and any hardware. Always close down explicitly. A script that simply runs off the end can leave a full-screen window stuck in front of everything else.</p>
+
+        <h3 id="own"><span class="secnum">1.7</span>Make it your own</h3>
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p><b>1.</b> Change the background to mid-grey. PsychoPy’s signed colour scale runs from <code>[-1, -1, -1]</code> for black to <code>[1, 1, 1]</code> for white. What value gives mid-grey?</p>
+          <details class="reveal"><summary>Show the answer</summary>
+            <p><code>color=[0, 0, 0]</code>. Zero on each of the red, green and blue channels is the middle of the scale. This is the grey of PsychoPy’s default window, and of the window on this site’s home page.</p>
+          </details>
+          <p><b>2.</b> Add a second <code>TextStim</code> in a different colour, positioned near the top with <code>pos=[0, 0.3]</code>, and draw both before the flip.</p>
+          <details class="reveal"><summary>Show one way to do it</summary>
+<pre class="code" data-lang="Python" data-file="first_experiment.py"><code class="language-python">title = visual.TextStim(win, text="Hello", color='yellow',
+                        pos=[0, 0.3], height=0.06)
+
+message.draw()
+title.draw()
+win.flip()</code></pre>
+            <p>Create the new stimulus with the other one, near the top, and add its <code>draw()</code> before the existing <code>win.flip()</code>. The order of the two draws does not matter here, because they do not overlap.</p>
+          </details>
+          <p><b>3.</b> Make the program print which key was pressed, not just whether it was escape.</p>
+          <details class="reveal"><summary>Show one way to do it</summary>
+<pre class="code" data-lang="Python" data-file="first_experiment.py"><code class="language-python">print("Key pressed:", keys[0])</code></pre>
+            <p><code>waitKeys()</code> returns a list of key names, so the first key pressed is <code>keys[0]</code>. Put the line straight after the <code>waitKeys()</code> call.</p>
+          </details>
+        </div>
+        <p>If the second stimulus does not appear, check that you drew it before the flip. Only what has been drawn since the last flip is shown by the next one. This single rule explains the majority of “why can’t I see it” questions you will ever ask.</p>
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>Notice we have not saved any data yet, because there is nothing worth saving. From Module 2 onwards every script opens an <code>ExperimentHandler</code> at the top and writes one tidy row per trial, named and typed so that R reads it without complaint.</p>
+        </div>
+      </section>
+
+
+      <section aria-labelledby="checks">
+        <h2 class="part" id="checks">Before you move on</h2>
+        <p>Tick each check as you complete it. Your ticks are kept in this browser only.</p>
+        <ul class="checklist" data-key="module-1" data-status="check-status-1">
+          <li><input type="checkbox" id="c1-0"><label for="c1-0">You can index a list from 0, look up a dictionary key, and write a <code>for</code> loop with an <code>if</code> inside.<span class="hint">Sections 1.1 to 1.4</span></label></li>
+          <li><input type="checkbox" id="c1-1"><label for="c1-1"><code>first_experiment.py</code> opens a window, shows the message and closes when you press space.<span class="hint">Section 1.5</span></label></li>
+          <li><input type="checkbox" id="c1-2"><label for="c1-2">Pressing escape prints “Participant quit early.” before the window closes.<span class="hint">Section 1.5</span></label></li>
+          <li><input type="checkbox" id="c1-3"><label for="c1-3">You can explain why nothing appears until <code>win.flip()</code>.<span class="hint">Section 1.6</span></label></li>
+          <li><input type="checkbox" id="c1-4"><label for="c1-4">You have tried all three changes in 1.7.<span class="hint">Section 1.7</span></label></li>
+        </ul>
+        <p class="check-status" id="check-status-1" aria-live="polite"></p>
+
+        <nav class="pager" aria-label="Module navigation">
+          <a class="prev" href="module-0.html"><span class="dir">Previous</span><span class="t">Module 0: Getting set up</span></a>
+          <a class="next" href="module-2.html"><span class="dir">Next</span><span class="t">Module 2: From one screen to a whole trial</span></a>
+        </nav>
+      </section>
+    </article>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <p>Coding Experiments in PsychoPy. Discipline of Psychology, Curtin University. Text licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js" data-manual></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-r.min.js"></script>
+<script src="assets/thumbs.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/coder-demos.js"></script>
+<script type="module" src="assets/pycell.js"></script>
+</body>
+</html>

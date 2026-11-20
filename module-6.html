@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Module 6: Questionnaires and rating data | Coding Experiments in PsychoPy</title>
+<meta name="description" content="Build rating questionnaires with the PsychoPy Slider and score them in R: a shaded-box screener and a five-subscale personality questionnaire with reverse-keyed items.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 22'><rect width='32' height='22' rx='2' fill='%23808080'/><circle cx='16' cy='11' r='4' fill='white'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="index.html"><span class="wordmark-glyph" aria-hidden="true"></span>Coding Experiments in PsychoPy</a>
+    <nav class="topnav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="index.html#modules">Modules</a>
+      <a href="troubleshooting.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="module-banner">
+    <div class="module-head">
+      <div>
+        <p class="kicker">Module 6</p>
+        <h1>Questionnaires and rating data</h1>
+        <p class="lede">You build two questionnaires with PsychoPy’s rating Slider: a six-item screener with a threshold rule, and a 50-item personality questionnaire with five subscales and reverse-keyed items. Then you score both in R.</p>
+        <p class="build-line"><b>You will finish with</b> two working questionnaires, a screen result per respondent, and a five-subscale profile. <span class="lang py">Python</span> <span class="lang r">R</span></p>
+      </div>
+      <div class="banner-art" data-thumb="6"></div>
+    </div>
+  </div>
+
+  <div class="module-body">
+    <nav class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <p class="toc-part py">The ASRS screener</p>
+      <ol>
+        <li><a href="#why-asrs">6.1 Why the ASRS</a></li>
+        <li><a href="#scale">6.2 The response scale</a></li>
+        <li><a href="#slider">6.3 The Slider</a></li>
+        <li><a href="#items-file">6.4 Items in a file</a></li>
+        <li><a href="#loop">6.5 One item at a time</a></li>
+        <li><a href="#record-asrs">6.6 Recording each item</a></li>
+        <li><a href="#asrs-files">6.7 Items file and data</a></li>
+      </ol>
+      <p class="toc-part r">Scoring the screener</p>
+      <ol>
+        <li><a href="#asrs-join">6.8 Attach the thresholds</a></li>
+        <li><a href="#asrs-screen">6.9 The screen</a></li>
+      </ol>
+      <p class="toc-part py">The IPIP Big Five</p>
+      <ol>
+        <li><a href="#why-ipip">6.10 Why several subscales?</a></li>
+        <li><a href="#ipip-slider">6.11 Five-point slider</a></li>
+        <li><a href="#ipip-loop">6.12 Loop with progress</a></li>
+        <li><a href="#record-ipip">6.13 Recording each item</a></li>
+        <li><a href="#ipip-files">6.14 Items file and data</a></li>
+      </ol>
+      <p class="toc-part r">Scoring the subscales</p>
+      <ol>
+        <li><a href="#ipip-join">6.15 Join and reverse-score</a></li>
+        <li><a href="#ipip-profile">6.16 Subscale scores</a></li>
+        <li><a href="#ipip-plot">6.17 The group profile</a></li>
+        <li><a href="#scripts">6.18 The complete scripts</a></li>
+      </ol>
+      <ol>
+        <li><a href="#checks">Before you move on</a></li>
+      </ol>
+    </nav>
+
+    <article class="content">
+
+      <section class="part-py" aria-labelledby="part-6a">
+        <h2 class="part" id="part-6a">A screener: the ASRS <span class="lang py">Python</span></h2>
+        <p>So far every response has been a fast key press. Questionnaires are different: the participant reads a statement and rates it on a scale, and the data are ordinal rather than reaction times. This module teaches that pattern twice. First with a real, widely used screener, the six-question Adult ADHD Self-Report Scale (ASRS-v1.1), which reduces to a single count; then with a 50-item personality questionnaire that has five subscales and reverse-keyed items. You can work through this module before the capstones or after them.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>The ASRS-v1.1 Screener is © New York University and Ronald C. Kessler, PhD, all rights reserved, with requests to reproduce or translate directed to Professor Kessler at Harvard Medical School. For that reason its item wording does not appear on this site. Your supervisor will give you the items file, <code>asrs_items.csv</code>; keep the attribution on anything you distribute. Everything here works with the items file whatever its wording, and the example data use item numbers only.</p>
+        </div>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>The ASRS is a <em>screening</em> tool, not a diagnosis. A positive screen means a fuller assessment may be warranted; it does not confirm ADHD. Say this plainly on screen and in any participant information, because people will inevitably run it on themselves.</p>
+        </div>
+
+        <h3 id="why-asrs"><span class="secnum">6.1</span>Why a questionnaire, and why the ASRS</h3>
+        <p>A questionnaire exercises a different set of skills from the reaction-time tasks. Instead of timing a key press to the millisecond, you present text, capture an ordinal rating, loop over items you have stored in a data file rather than written into the code, and save categorical responses. Almost every applied study mixes a task with at least one questionnaire, so this is a pattern worth owning.</p>
+        <p>The screener earns its place because its scoring is more interesting than a plain sum. It uses a <em>shaded-box</em> rule: a response counts only if it reaches a threshold that differs across items, and four or more counted items flag a positive screen. Encoding that rule is a genuine recoding exercise in R, much closer to what real instruments demand than averaging a tidy Likert scale.</p>
+        <p>The five response options map to numbers in the obvious way: Never is 0, Rarely 1, Sometimes 2, Often 3, Very Often 4. The standard form counts an item for the screen when items 1 to 3 reach <em>Sometimes</em> and items 4 to 6 reach <em>Often</em>. We store those per-item thresholds as data so a reader can see and change them.</p>
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>Design with the analysis in mind: we save one row per item with its <code>item_no</code>, and we keep the scoring thresholds in the same items file the experiment reads. R then joins responses to thresholds and the screen falls out in a few lines.</p>
+        </div>
+
+        <h3 id="scale"><span class="secnum">6.2</span>The response scale, in one place</h3>
+        <p>Open a new file, save it as <code>asrs_questionnaire.py</code>, and build it up in the usual sections. The participant dialog and the <code>ExperimentHandler</code> are exactly as in the capstones, so we focus on what is new: the rating widget and the item loop.</p>
+        <p>Name the response labels once. Their order defines the mapping to 0 to 4, so this single line is also the scoring key for the raw responses.</p>
+<pre class="code" data-lang="Python" data-file="asrs_questionnaire.py"><code class="language-python">ITEMS_FILE  = 'asrs_items.csv'
+RESP_LABELS = ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often']  # 0..4</code></pre>
+
+        <h3 id="slider"><span class="secnum">6.3</span>A rating widget: the Slider</h3>
+        <p>PsychoPy’s <code>Slider</code> gives you a ready-made rating scale. With <code>style='radio'</code> and integer ticks, it shows one selectable button per option, answered with the mouse. We make the mouse visible because, unlike the reaction-time tasks, here the participant needs it.</p>
+<pre class="code" data-lang="Python" data-file="asrs_questionnaire.py"><code class="language-python">win.mouseVisible = True
+
+slider = visual.Slider(win, ticks=[0, 1, 2, 3, 4], labels=RESP_LABELS,
+                       granularity=1, style='radio', size=(0.9, 0.06),
+                       pos=(0, -0.18), color='white', labelHeight=0.03)</code></pre>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p><code>granularity=1</code> forces whole-number answers, so a respondent cannot land between Often and Very Often. Without it the slider would return continuous values, which is wrong for a categorical scale.</p>
+        </div>
+
+        <h3 id="items-file"><span class="secnum">6.4</span>The items live in a file, not the code</h3>
+        <p><code>data.importConditions</code> reads the items file and hands back a list of dictionaries, one per item, with keys matching the column headings (<code>item_no</code>, <code>shaded_from</code>, <code>item_text</code>). Keeping the items in a file means you can edit, translate or reorder them without touching the program.</p>
+<pre class="code" data-lang="Python" data-file="asrs_questionnaire.py"><code class="language-python">items = data.importConditions(ITEMS_FILE)   # a list of dicts, one per item</code></pre>
+
+        <h3 id="loop"><span class="secnum">6.5</span>One item at a time</h3>
+        <p>For each item we show the statement and the slider, and we wait. The loop only lets the participant move on once they have actually chosen an option, so no item can be skipped by accident. Pressing <kbd>Space</kbd> with no answer simply does nothing.</p>
+<pre class="code" data-lang="Python" data-file="asrs_questionnaire.py"><code class="language-python">for item in items:
+    item_text.text = f"{item['item_no']}. {item['item_text']}"
+    slider.reset()
+    kb.clearEvents()
+
+    responded = False
+    while not responded:
+        item_text.draw()
+        slider.draw()
+        prompt.draw()
+        win.flip()
+        keys = kb.getKeys(keyList=['space', 'escape'], waitRelease=False)
+        if keys:
+            if 'escape' in [k.name for k in keys]:
+                quit_cleanly()
+            if slider.getRating() is not None:   # only advance once answered
+                responded = True
+
+    # a radio Slider is categorical: getRating() returns the LABEL text
+    rating_label = slider.getRating()
+    response = RESP_LABELS.index(rating_label)   # map back to its 0-4 code</code></pre>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p><code>slider.reset()</code> at the top of each item is essential. Forget it and the slider keeps the previous item’s answer on screen, quietly biasing every response after the first.</p>
+        </div>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>One quirk worth knowing: a radio Slider is <em>categorical</em>, so <code>getRating()</code> returns the chosen label text, not a number. With word labels like “Sometimes”, <code>int(slider.getRating())</code> would raise an error, so we look the label up in <code>RESP_LABELS</code> to recover its 0–4 code. A scale whose labels happen to be numerals hides this trap; word labels expose it.</p>
+        </div>
+
+        <h3 id="record-asrs"><span class="secnum">6.6</span>Recording each item</h3>
+        <p>We store the numeric response, its label for readability, and how long the item took from <code>slider.getRT()</code>. One <code>nextEntry</code> per item gives us long-format data, one row per item, which is the friendliest possible shape for R.</p>
+<pre class="code" data-lang="Python" data-file="asrs_questionnaire.py"><code class="language-python">thisExp.addData('item_no', item['item_no'])
+thisExp.addData('response', response)
+thisExp.addData('response_label', rating_label)
+thisExp.addData('rt', slider.getRT())
+thisExp.nextEntry()</code></pre>
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Run it once and confirm the data file has one row per item, a response from 0 to 4, and the matching label. To adapt it to a different rating instrument later, you only change the wording and thresholds in <code>asrs_items.csv</code>; the code does not change.</p>
+        </div>
+
+        <h3 id="asrs-files"><span class="secnum">6.7</span>The items file and the data it writes</h3>
+        <p>There are two files to understand: the items file you prepare, and the data file the experiment writes. The items file, <code>asrs_items.csv</code>, has one row per item:</p>
+        <div class="coltable"><table>
+          <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>item_no</code></td><td>1 to 6, matching the numbering on the official screener</td></tr>
+            <tr><td><code>shaded_from</code></td><td>Lowest response that counts: 2 (Sometimes) for items 1–3, 3 (Often) for items 4–6</td></tr>
+            <tr><td><code>item_text</code></td><td>The statement shown to the participant (the official screener wording, supplied separately)</td></tr>
+          </tbody>
+        </table></div>
+        <p>The data file, written to the <code>data</code> folder, has one row per item per respondent:</p>
+        <div class="coltable"><table>
+          <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>participant</code></td><td>Respondent code from the dialog</td></tr>
+            <tr><td><code>session</code></td><td>Session label</td></tr>
+            <tr><td><code>date</code></td><td>Timestamp the session began</td></tr>
+            <tr><td><code>item_no</code></td><td>Which item, 1 to 6</td></tr>
+            <tr><td><code>response</code></td><td>The rating, 0 (Never) to 4 (Very Often)</td></tr>
+            <tr><td><code>response_label</code></td><td>The same rating as a word, for readability</td></tr>
+            <tr><td><code>rt</code></td><td>Seconds taken to answer that item</td></tr>
+          </tbody>
+        </table></div>
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>Because the scoring thresholds live in <code>asrs_items.csv</code> rather than the data file, R reads both and joins them on <code>item_no</code>. That keeps the thresholds in exactly one place, so a correction is a single edit.</p>
+        </div>
+      </section>
+
+      <section class="part-r" aria-labelledby="part-6b">
+        <h2 class="part" id="part-6b">Scoring the screener in R <span class="lang r">R</span></h2>
+        <p>The analysis stacks every respondent, attaches each response to its threshold, applies the shaded-box rule, and reports who screened positive. It stays in the tidyverse. In the browser, the <code>data</code> folder holds twenty simulated respondents, and <code>asrs_items.csv</code> sits beside it with the real thresholds and placeholder wording.</p>
+
+        <h3 id="asrs-join"><span class="secnum">6.8</span>Stack the responses and attach the thresholds</h3>
+        <div class="rcell" id="rc-asrs-join" data-packages="readr,dplyr,purrr,tidyr,ggplot2" data-files="assets/data/asrs/index.json" data-group="asrs">
+          <div class="editor-tab"><span class="file">asrs_analysis.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="22" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">library(readr)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(ggplot2)
+
+files &lt;- list.files("data", pattern = "_ASRS_.*\\.csv$", full.names = TRUE)
+resp &lt;- files |>
+  set_names() |>
+  map(read_csv, show_col_types = FALSE) |>
+  list_rbind(names_to = "file")
+
+items &lt;- read_csv("asrs_items.csv", show_col_types = FALSE) |>
+  select(item_no, shaded_from)
+
+scored &lt;- resp |>
+  left_join(items, by = "item_no") |>
+  mutate(shaded = response >= shaded_from)
+
+# a quick look, not part of the script: the first respondent's six rows
+scored |> filter(participant == "R01") |> select(item_no, response, shaded_from, shaded)</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <p>The <code>shaded</code> column is <code>TRUE</code> whenever a response reaches that item’s threshold, ready to be counted.</p>
+
+        <h3 id="asrs-screen"><span class="secnum">6.9</span>The screen, per respondent</h3>
+        <div class="rcell" id="rc-asrs-screen" data-packages="readr,dplyr,purrr,tidyr,ggplot2" data-needs="rc-asrs-join" data-group="asrs">
+          <div class="editor-tab"><span class="file">asrs_analysis.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="14" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">summary &lt;- scored |>
+  group_by(participant) |>
+  summarise(
+    shaded_count = sum(shaded),        # 0-6
+    point_total  = sum(response),      # 0-24
+    .groups = "drop"
+  ) |>
+  mutate(
+    screen_positive = shaded_count >= 4,   # canonical shaded-box rule
+    point_positive  = point_total >= 14    # alternative point rule
+  )
+
+summary</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <p>Each respondent now has a shaded-box count out of six, a point total out of 24, and both the canonical and the point-based positive-screen flags, so you can report whichever your protocol specifies.</p>
+        <div class="demo-block" id="demo-asrs">
+          <p class="demo-title"><b>Try it: the shaded-box rule.</b> One respondent’s six answers, laid out like the paper form. The shaded cells are each item’s zone; click any answer to change it.</p>
+          <div class="tablewrap" id="asrs-grid"></div>
+          <div class="readout" id="asrs-read"></div>
+          <p class="demo-note-line" id="asrs-note" aria-live="polite"></p>
+        </div>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>Confirm the per-item thresholds in <code>asrs_items.csv</code> against the shaded boxes on your official screener before you report anything. The shaded region does not start in the same column on every row, and a single wrong threshold can flip a respondent’s result.</p>
+        </div>
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>If you later want the full 18-item checklist instead, the same pipeline extends without change: add the extra items and their thresholds to the file, and the screen still reads off the first six.</p>
+        </div>
+        <p>The same skeleton (a Slider, an item loop from a file, one row per item) extends to any rating questionnaire you need, from a mood scale to a post-task debrief. Only the items file and the scoring change.</p>
+      </section>
+
+      <section class="part-py" aria-labelledby="part-6c">
+        <h2 class="part" id="part-6c">A multi-subscale questionnaire: the IPIP Big Five <span class="lang py">Python</span></h2>
+        <p>The ADHD screener reduced to a single count. Most questionnaires are richer than that: they carry several subscales, often with reverse-keyed items, and yield a profile rather than one number. This part teaches that step up using the 50-item IPIP version of Goldberg’s (1992) Big-Five Factor Markers: five ten-item subscales, rated on a 5-point scale, with 20 of the 50 items reverse-keyed.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>The International Personality Item Pool (IPIP) is in the public domain, so its items can be used, shared, reordered and adapted freely. The items, their order and their keys in <code>ipip50_items.csv</code> come from the IPIP website (ipip.ori.org), with two words changed to Australian spelling. Cite the scales as Goldberg, L. R. (1992). The development of markers for the Big-Five factor structure. <em>Psychological Assessment, 4</em>, 26–42.</p>
+        </div>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>These scales describe broad personality traits, not abilities or disorders, and fifty items give only a rough picture. Treat your own scores as a demonstration of the coding, not as feedback about yourself, and say the same to anyone you test.</p>
+        </div>
+
+        <h3 id="why-ipip"><span class="secnum">6.10</span>Why a multi-subscale questionnaire?</h3>
+        <p>A single-score instrument like the screener answers one question. A multi-subscale instrument answers several at once, and the coding has to keep them apart. The IPIP-50 is a good teacher because its items belong to five subscales, so scoring means summing within each subscale rather than over the whole, and because many items are worded in the opposite direction, so scoring also means flipping those items first. The subscales are:</p>
+        <div class="coltable"><table>
+          <thead><tr><th>Subscale</th><th>Trait</th><th>Items keyed + / −</th></tr></thead>
+          <tbody>
+            <tr><td><code>extraversion</code></td><td>Sociable, talkative, energised by company</td><td>5 / 5</td></tr>
+            <tr><td><code>agreeableness</code></td><td>Warm, considerate, interested in others</td><td>6 / 4</td></tr>
+            <tr><td><code>conscientiousness</code></td><td>Organised, careful, reliable</td><td>6 / 4</td></tr>
+            <tr><td><code>emotional_stability</code></td><td>Calm and even-tempered (the opposite pole of neuroticism)</td><td>2 / 8</td></tr>
+            <tr><td><code>intellect</code></td><td>Imaginative, curious, quick with ideas</td><td>7 / 3</td></tr>
+          </tbody>
+        </table></div>
+        <p>Each item is rated from 1 (Very Inaccurate) to 5 (Very Accurate) as a description of the respondent. Once the reverse-keyed items are flipped, a subscale scores between 10 and 50, with higher meaning more of the trait. The items file lists them in the IPIP’s suggested order, which cycles through the five subscales and alternates the keying, so that respondents keep reading each statement rather than settling into one answer. The teaching goal is the machinery: how to carry per-item metadata in a file, present a longer scale, and turn raw responses into a per-subscale profile in R.</p>
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>Design with the analysis in mind: every item carries a subscale and a reverse flag in the items file. R reads those, flips the reverse-keyed items, and sums within subscale. Because the metadata lives in one file, correcting a subscale assignment or a reverse key is a single edit.</p>
+        </div>
+
+        <h3 id="ipip-slider"><span class="secnum">6.11</span>Settings, and a five-point slider with anchors</h3>
+        <p>Save a new file as <code>ipip_questionnaire.py</code>. It reuses the Slider and the item loop from the screener, with three changes: numbered buttons with word anchors at the ends, a small progress indicator (50 items is a long way), and an items file that carries subscale and reverse metadata which stays out of the data.</p>
+<pre class="code" data-lang="Python" data-file="ipip_questionnaire.py"><code class="language-python">ITEMS_FILE = 'ipip50_items.csv'
+SCALE_MIN, SCALE_MAX = 1, 5      # 5-point accuracy scale</code></pre>
+        <p>Five radio buttons carry the numbers; two small text labels anchor the ends, which is clearer than trying to squeeze long words under every tick.</p>
+<pre class="code" data-lang="Python" data-file="ipip_questionnaire.py"><code class="language-python">slider = visual.Slider(win, ticks=list(range(SCALE_MIN, SCALE_MAX + 1)),
+                       labels=[str(n) for n in range(SCALE_MIN, SCALE_MAX + 1)],
+                       granularity=1, style='radio', size=(1.0, 0.06),
+                       pos=(0, -0.12), color='white', labelHeight=0.03)
+
+anchor_lo = visual.TextStim(win, text='Very Inaccurate', color='grey',
+                            height=0.028, pos=(-0.5, -0.21))
+anchor_hi = visual.TextStim(win, text='Very Accurate', color='grey',
+                            height=0.028, pos=(0.5, -0.21))</code></pre>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>IPIP items are written as short verb phrases without “I” (“Am always prepared.”), so the instructions do the framing. The complete script opens with the IPIP’s standard instructions, asking respondents to describe themselves as they generally are now.</p>
+        </div>
+
+        <h3 id="ipip-loop"><span class="secnum">6.12</span>The item loop, with a progress counter</h3>
+        <p>The structure is the loop you already know. The only addition is a progress line so the respondent can see how far through they are, which matters on a long questionnaire.</p>
+<pre class="code" data-lang="Python" data-file="ipip_questionnaire.py"><code class="language-python">for i, item in enumerate(items, start=1):
+    progress.text = f"Item {i} of {len(items)}"
+    item_text.text = item['item_text']
+    slider.reset()
+    kb.clearEvents()
+
+    responded = False
+    while not responded:
+        progress.draw(); item_text.draw(); slider.draw()
+        anchor_lo.draw(); anchor_hi.draw(); prompt.draw()
+        win.flip()
+        keys = kb.getKeys(keyList=['space', 'escape'], waitRelease=False)
+        if keys:
+            if 'escape' in [k.name for k in keys]:
+                quit_cleanly()
+            if slider.getRating() is not None:
+                responded = True
+
+    response = int(slider.getRating())</code></pre>
+        <p>Here the labels are the numerals 1 to 5, so <code>getRating()</code> returns <code>"3"</code>, say, and <code>int()</code> turns it into the number 3. This is the case the Note in 6.5 warned about: the trap is hidden, not gone.</p>
+
+        <h3 id="record-ipip"><span class="secnum">6.13</span>Recording each item</h3>
+        <p>We save the item number and the raw response only. The subscale and reverse flag stay in the items file, where R will pick them up, so that scoring has a single source of truth.</p>
+<pre class="code" data-lang="Python" data-file="ipip_questionnaire.py"><code class="language-python">thisExp.addData('item_no', item['item_no'])
+thisExp.addData('response', response)
+thisExp.addData('rt', slider.getRT())
+thisExp.nextEntry()</code></pre>
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Run it and confirm the data file records a response from 1 to 5 for each of the 50 items. To reuse the pipeline for a different subscaled questionnaire later, swap the wording and the subscale and reverse columns in the items file; nothing in the code changes.</p>
+        </div>
+
+        <h3 id="ipip-files"><span class="secnum">6.14</span>The items file and the data it writes</h3>
+        <p>The items file, <code>ipip50_items.csv</code>, is where all the scoring metadata lives:</p>
+        <div class="coltable"><table>
+          <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>item_no</code></td><td>1 to 50, in the IPIP’s suggested order</td></tr>
+            <tr><td><code>subscale</code></td><td>Which of the five subscales the item belongs to</td></tr>
+            <tr><td><code>reverse</code></td><td>1 for a −keyed item, which is flipped before summing; 0 for a +keyed item</td></tr>
+            <tr><td><code>item_text</code></td><td>The statement shown to the participant</td></tr>
+          </tbody>
+        </table></div>
+        <p>The data file the experiment writes is deliberately lean, one row per item:</p>
+        <div class="coltable"><table>
+          <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>participant</code></td><td>Respondent code from the dialog</td></tr>
+            <tr><td><code>session</code></td><td>Session label</td></tr>
+            <tr><td><code>date</code></td><td>Timestamp the session began</td></tr>
+            <tr><td><code>item_no</code></td><td>Which item, 1 to 50</td></tr>
+            <tr><td><code>response</code></td><td>The rating, 1 (Very Inaccurate) to 5 (Very Accurate)</td></tr>
+            <tr><td><code>rt</code></td><td>Seconds taken to answer that item</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="part-r" aria-labelledby="part-6d">
+        <h2 class="part" id="part-6d">Scoring the subscales in R <span class="lang r">R</span></h2>
+        <p>Scoring a multi-subscale instrument is three moves: attach each response to its subscale and reverse flag, flip the reverse-keyed items, then sum within subscale. On a five-point scale the flip is six minus the response, so a 1 becomes a 5 and a 5 becomes a 1. In the browser, the <code>data</code> folder holds thirty simulated respondents, with <code>ipip50_items.csv</code> beside it.</p>
+
+        <h3 id="ipip-join"><span class="secnum">6.15</span>Join and reverse-score</h3>
+        <div class="rcell" id="rc-ipip-join" data-packages="readr,dplyr,purrr,tidyr,ggplot2" data-files="assets/data/ipip/index.json" data-group="ipip">
+          <div class="editor-tab"><span class="file">ipip_analysis.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="23" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">library(readr)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(ggplot2)
+SCALE_MAX &lt;- 5
+
+files &lt;- list.files("data", pattern = "_IPIP_.*\\.csv$", full.names = TRUE)
+resp &lt;- files |>
+  set_names() |>
+  map(read_csv, show_col_types = FALSE) |>
+  list_rbind(names_to = "file")
+
+items &lt;- read_csv("ipip50_items.csv", show_col_types = FALSE) |>
+  select(item_no, subscale, reverse)
+
+scored &lt;- resp |>
+  left_join(items, by = "item_no") |>
+  mutate(scored = if_else(reverse == 1, (SCALE_MAX + 1) - response, response))
+
+# a quick look, not part of the script: the first respondent's first six items
+scored |> filter(participant == "R01") |> select(item_no, subscale, reverse, response, scored) |> head()</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <div class="demo-block" id="demo-rev">
+          <p class="demo-title"><b>Try it: why the flip matters.</b> The ten Extraversion items, half of them −keyed. Change the answers, try the preset respondents, or turn reverse scoring off.</p>
+          <div class="demo-controls">
+            <label><input type="checkbox" id="rev-apply" checked> Apply reverse scoring</label>
+            <button type="button" class="btn" data-preset="outgoing">Outgoing respondent</button>
+            <button type="button" class="btn" data-preset="quiet">Quiet respondent</button>
+            <button type="button" class="btn" data-preset="agree">Agrees with everything</button>
+          </div>
+          <div class="itemgrid" id="rev-items"></div>
+          <div id="rev-bar"></div>
+          <pre class="listing" id="rev-code" style="margin-top:1rem" aria-label="The scoring line in R"></pre>
+          <div class="explain" id="rev-explain"></div>
+        </div>
+
+        <h3 id="ipip-profile"><span class="secnum">6.16</span>Subscale scores and a profile</h3>
+        <div class="rcell" id="rc-ipip-profile" data-packages="readr,dplyr,purrr,tidyr,ggplot2" data-needs="rc-ipip-join" data-group="ipip">
+          <div class="editor-tab"><span class="file">ipip_analysis.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="10" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">subscale_scores &lt;- scored |>
+  group_by(participant, subscale) |>
+  summarise(score = sum(scored), .groups = "drop")
+
+# one row per respondent, one column per subscale
+profile &lt;- subscale_scores |>
+  pivot_wider(names_from = subscale, values_from = score)
+
+profile</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <p>Each respondent now has five subscale scores between 10 and 50. Pivoting to a wide profile gives a tidy person-by-subscale table you can correlate, plot, or feed into a model.</p>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>The fifth subscale is scored as <em>emotional stability</em>, so a high score means calm and even-tempered. Many papers report the same trait the other way round, as neuroticism. Check which direction a source uses before you compare your numbers with theirs.</p>
+        </div>
+
+        <h3 id="ipip-plot"><span class="secnum">6.17</span>The group profile</h3>
+        <div class="rcell" id="rc-ipip-plot" data-packages="readr,dplyr,purrr,tidyr,ggplot2" data-needs="rc-ipip-profile" data-group="ipip">
+          <div class="editor-tab"><span class="file">ipip_analysis.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="9" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">subscale_scores |>
+  group_by(subscale) |>
+  summarise(mean_score = mean(score), .groups = "drop") |>
+  ggplot(aes(reorder(subscale, mean_score), mean_score)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(x = NULL, y = "Mean subscale score (10-50)",
+       title = "IPIP Big Five profile (group mean)")</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>The subscale map and reverse flags here are taken from the IPIP scoring key. If you adapt the instrument or suspect a mismatch, re-check them against the source: a misassigned item or a missed reverse key quietly distorts a whole subscale, and unlike a typo it produces no error to warn you.</p>
+        </div>
+        <p>One way to catch a wrong key is to correlate each item’s raw response with the rest of its subscale, after the other items have been flipped. A −keyed item should correlate negatively before its own flip, and a +keyed item positively. An item with the wrong sign for its key is worth a second look.</p>
+        <div class="rcell" id="rc-ipip-check" data-packages="readr,dplyr,purrr,tidyr,ggplot2" data-needs="rc-ipip-join" data-group="ipip">
+          <div class="editor-tab"><span class="file">Console, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="10" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run"># each item against the rest of its subscale, before that item is flipped
+key_check &lt;- scored |>
+  group_by(participant, subscale) |>
+  mutate(rest = sum(scored) - scored) |>
+  group_by(item_no, subscale, reverse) |>
+  summarise(r = cor(response, rest), .groups = "drop") |>
+  arrange(r)
+
+key_check</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>The same template handles any subscaled questionnaire: change the items file’s subscale and reverse columns and the wording, and this scoring runs unchanged. Reverse scoring generalises as <code>(SCALE_MAX + 1) - response</code> for any maximum.</p>
+        </div>
+        <p>Between the screener and this questionnaire you have now built a single-score instrument and a multi-subscale one with reverse scoring, which between them cover most self-report questionnaires you will meet.</p>
+
+        <h3 id="scripts"><span class="secnum">6.18</span>The complete scripts</h3>
+        <p>Keep each items file in the same folder as its script. For the ASRS, replace the placeholder wording in <code>asrs_items.csv</code> with the official items file from your supervisor.</p>
+        <ul class="downloads">
+          <li><a class="py" href="assets/downloads/asrs_questionnaire.py" download><code>asrs_questionnaire.py</code><span>The screener, for the PsychoPy Coder</span></a></li>
+          <li><a class="d" href="assets/downloads/asrs_items.csv" download><code>asrs_items.csv</code><span>Item numbers and thresholds, with placeholder wording</span></a></li>
+          <li><a class="r" href="assets/downloads/asrs_analysis.R" download><code>asrs_analysis.R</code><span>Scoring the screener, for RStudio</span></a></li>
+          <li><a class="d" href="assets/downloads/asrs-example-data.zip" download><code>asrs-example-data.zip</code><span>Twenty simulated respondents, in a <code>data</code> folder</span></a></li>
+          <li><a class="py" href="assets/downloads/ipip_questionnaire.py" download><code>ipip_questionnaire.py</code><span>The IPIP-50, for the PsychoPy Coder</span></a></li>
+          <li><a class="d" href="assets/downloads/ipip50_items.csv" download><code>ipip50_items.csv</code><span>All 50 items with subscales and keys (public domain)</span></a></li>
+          <li><a class="r" href="assets/downloads/ipip_analysis.R" download><code>ipip_analysis.R</code><span>Scoring the subscales, for RStudio</span></a></li>
+          <li><a class="d" href="assets/downloads/ipip-example-data.zip" download><code>ipip-example-data.zip</code><span>Thirty simulated respondents, in a <code>data</code> folder</span></a></li>
+        </ul>
+      </section>
+
+
+      <section aria-labelledby="checks">
+        <h2 class="part" id="checks">Before you move on</h2>
+        <p>Tick each check as you complete it. Your ticks are kept in this browser only.</p>
+        <ul class="checklist" data-key="module-6" data-status="check-status-6">
+          <li><input type="checkbox" id="c6-0"><label for="c6-0"><code>asrs_questionnaire.py</code> writes one row per item, with a response from 0 to 4 and its label.<span class="hint">Sections 6.2 to 6.7</span></label></li>
+          <li><input type="checkbox" id="c6-1"><label for="c6-1">You can explain why a radio Slider with word labels needs <code>RESP_LABELS.index()</code>.<span class="hint">Section 6.5</span></label></li>
+          <li><input type="checkbox" id="c6-2"><label for="c6-2"><code>asrs_analysis.R</code> gives a shaded count and a screen result per respondent.<span class="hint">Sections 6.8 and 6.9</span></label></li>
+          <li><input type="checkbox" id="c6-3"><label for="c6-3"><code>ipip_questionnaire.py</code> records 50 responses from 1 to 5.<span class="hint">Sections 6.11 to 6.14</span></label></li>
+          <li><input type="checkbox" id="c6-4"><label for="c6-4"><code>ipip_analysis.R</code> flips the −keyed items and prints a five-subscale profile.<span class="hint">Sections 6.15 to 6.17</span></label></li>
+        </ul>
+        <p class="check-status" id="check-status-6" aria-live="polite"></p>
+
+        <nav class="pager" aria-label="Module navigation">
+          <a class="prev" href="module-5.html"><span class="dir">Previous</span><span class="t">Module 5: Capstone B, a recognition memory task</span></a>
+          <a class="next" href="troubleshooting.html"><span class="dir">Next</span><span class="t">Troubleshooting</span></a>
+        </nav>
+      </section>
+    </article>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <p>Coding Experiments in PsychoPy. Discipline of Psychology, Curtin University. Text licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js" data-manual></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-r.min.js"></script>
+<script src="assets/thumbs.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/demos.js"></script>
+<script type="module" src="assets/rcell.js"></script>
+</body>
+</html>

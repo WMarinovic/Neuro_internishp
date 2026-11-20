@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Module 3: Your first R script | Coding Experiments in PsychoPy</title>
+<meta name="description" content="Write the smallest R script that builds a table, summarises it and plots it, and run it in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 22'><rect width='32' height='22' rx='2' fill='%23808080'/><circle cx='16' cy='11' r='4' fill='white'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="index.html"><span class="wordmark-glyph" aria-hidden="true"></span>Coding Experiments in PsychoPy</a>
+    <nav class="topnav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="index.html#modules">Modules</a>
+      <a href="troubleshooting.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="module-banner">
+    <div class="module-head">
+      <div>
+        <p class="kicker">Module 3</p>
+        <h1>Your first R script</h1>
+        <p class="lede">You write the smallest R script that builds a table, summarises it and plots it, then take it apart. You can run it in RStudio and right here in your browser.</p>
+        <p class="build-line"><b>You will finish with</b> a summary table and a plot, from a script you can explain line by line. <span class="lang r">R</span></p>
+      </div>
+      <div class="banner-art" data-thumb="3"></div>
+    </div>
+  </div>
+
+  <div class="module-body">
+    <nav class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <p class="toc-part r">R</p>
+      <ol>
+        <li><a href="#whole-program">3.1 The whole program</a></li>
+        <li><a href="#taking-apart">3.2 Taking it apart</a></li>
+        <li><a href="#own">3.3 Make it your own</a></li>
+      </ol>
+      <ol>
+        <li><a href="#checks">Before you move on</a></li>
+      </ol>
+    </nav>
+
+    <article class="content">
+
+      <section class="part-r" aria-labelledby="part-3">
+        <h2 class="part" id="part-3">Your first R script <span class="lang r">R</span></h2>
+        <p>Every analysis script on this site, however different the data, is built from the same few moves: load the tidyverse, get the data into a tidy table, transform or summarise it, and look at the result, usually as a plot. In this module you write the smallest script that does all of these, then take it apart.</p>
+
+        <h3 id="whole-program"><span class="secnum">3.1</span>The whole program</h3>
+        <p>In RStudio, create a new script (File &gt; New File &gt; R Script) and save it as <code>first_script.R</code>. Type this in:</p>
+<pre class="code" data-lang="R" data-file="first_script.R"><code class="language-r">library(tidyverse)
+
+# 1. A tiny dataset (twelve pretend trials, three blocks of four)
+trials &lt;- tibble(
+  block = rep(1:3, each = 4),
+  rt    = c(0.62, 0.58, 0.60, 0.55,
+            0.50, 0.48, 0.52, 0.49,
+            0.44, 0.46, 0.43, 0.45)
+)
+
+# 2. Transform: one mean per block
+by_block &lt;- trials |>
+  group_by(block) |>
+  summarise(mean_rt = mean(rt))
+
+# 3. Look at the numbers
+print(by_block)
+
+# 4. Look at the shape
+ggplot(by_block, aes(block, mean_rt)) +
+  geom_line() +
+  geom_point(size = 2) +
+  labs(x = "Block", y = "Mean RT (s)", title = "Getting faster across blocks")</code></pre>
+        <p>Run the whole script at once with <kbd><span class="mod">Ctrl</span>+Shift+Enter</kbd> (Source), or run it line by line with <kbd><span class="mod">Ctrl</span>+Enter</kbd> as you did in Module 0. Either way, a small table appears in the Console and a line plot appears in the Plots pane, bottom right.</p>
+
+        <h4 class="subhead" id="run-here">Run it here as well</h4>
+        <p>The same script runs below, in your browser. Press Run, compare the result with what RStudio shows you, and use this copy to try the changes in 3.3. Two lines differ: in the browser the script loads dplyr and ggplot2 on their own, because downloading the whole tidyverse would take much longer. On your own computer, keep <code>library(tidyverse)</code>.</p>
+        <div class="rcell" data-packages="dplyr,ggplot2">
+          <div class="editor-tab"><span class="file">first_script.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="27" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">library(dplyr)
+library(ggplot2)
+
+# 1. A tiny dataset (twelve pretend trials, three blocks of four)
+trials &lt;- tibble(
+  block = rep(1:3, each = 4),
+  rt    = c(0.62, 0.58, 0.60, 0.55,
+            0.50, 0.48, 0.52, 0.49,
+            0.44, 0.46, 0.43, 0.45)
+)
+
+# 2. Transform: one mean per block
+by_block &lt;- trials |>
+  group_by(block) |>
+  summarise(mean_rt = mean(rt))
+
+# 3. Look at the numbers
+print(by_block)
+
+# 4. Look at the shape
+ggplot(by_block, aes(block, mean_rt)) +
+  geom_line() +
+  geom_point(size = 2) +
+  labs(x = "Block", y = "Mean RT (s)", title = "Getting faster across blocks")</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite">The first run downloads R into your browser, which takes a little while.</span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+        <p class="rcell-hint">You can edit the code before running it. <kbd>Tab</kbd> indents inside the box; press <kbd>Esc</kbd> to leave it. <kbd><span class="mod">Ctrl</span>+Shift+Enter</kbd> runs it, as in RStudio.</p>
+
+        <h3 id="taking-apart"><span class="secnum">3.2</span>Taking it apart</h3>
+        <p><code>library(tidyverse)</code> loads the whole bundle in one line rather than one package at a time. <code>tibble(...)</code> builds a data frame, R’s table type: each argument becomes a column, and <code>rep(1:3, each = 4)</code> repeats 1, 2, 3 four times each to give the block column. This is exactly the shape every CSV your PsychoPy scripts write will arrive in later: one row per trial, one column per variable.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>The <code>|&gt;</code> symbol is the pipe: it takes whatever is on its left and feeds it in as the first argument of whatever is on its right. <code>trials |&gt; group_by(block)</code> reads left to right, like a sentence: take trials, then group by block. Older R code you meet online often uses <code>%&gt;%</code> instead, from a package called magrittr; it does the same job. <code>|&gt;</code> is base R’s own version and the one these modules use throughout.</p>
+        </div>
+        <p><code>group_by(block)</code> followed by <code>summarise(mean_rt = mean(rt))</code> is the pattern behind almost every analysis on this site: split the rows into groups (here, one group per block), then collapse each group down to a single summary row. The result has one row per block, not one row per trial.</p>
+
+        <div class="demo-block" id="demo-pipe">
+          <p class="demo-title"><b>Try it: the pipe, one step at a time.</b> Step through the script and watch the table change at each line.</p>
+          <div class="demo-controls">
+            <span>Summary:</span>
+            <label><input type="radio" name="pipe-fn" value="mean" checked> mean</label>
+            <label><input type="radio" name="pipe-fn" value="median"> median</label>
+            <label><input type="checkbox" id="pipe-filter"> add <code>filter(rt &lt; 0.55)</code></label>
+          </div>
+          <div class="demo-controls">
+            <button type="button" class="btn" id="pipe-prev">Previous step</button>
+            <button type="button" class="btn primary" id="pipe-next">Next step</button>
+            <div class="stepper" id="pipe-steps" aria-label="Steps"></div>
+          </div>
+          <div class="demo-split">
+            <pre class="listing" id="pipe-code" aria-label="The script, with the current step highlighted"></pre>
+            <div>
+              <div id="pipe-out" aria-live="polite"></div>
+              <div class="explain" id="pipe-explain"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p><code>summarise()</code> removes one level of grouping as it collapses the data, which occasionally surprises people chaining several <code>group_by()</code> and <code>summarise()</code> calls together. If a later step behaves as though the data were still grouped by something you thought you had summarised away, print the tibble and check: it prints its own grouping, if any, directly under the column names.</p>
+        </div>
+        <p><code>ggplot(by_block, aes(block, mean_rt))</code> sets up a plot from <code>by_block</code>, mapping <code>block</code> to the x-axis and <code>mean_rt</code> to the y-axis, but draws nothing yet; <code>aes()</code> only maps data to position and appearance. Each <code>geom_...()</code> added afterwards with <code>+</code> draws one layer: <code>geom_line()</code> draws the connecting line, <code>geom_point()</code> adds a marker at each block, and <code>labs()</code> sets the axis titles and a plot title. Every plot in these modules is built by stacking geoms this way onto one <code>aes()</code> mapping.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>A script only has a working directory once you tell it one, and every analysis script from Module 4 onwards assumes it is the folder containing the <code>data</code> subfolder it needs to read. Session &gt; Set Working Directory &gt; To Source File Location does this for one session; a Project (File &gt; New Project, in the same folder as your script) does it automatically every time you reopen that folder, and is the better habit for anything you will come back to.</p>
+        </div>
+
+        <h3 id="own"><span class="secnum">3.3</span>Make it your own</h3>
+        <p>Try these in RStudio, or in the browser copy above.</p>
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p><b>1.</b> Change <code>mean(rt)</code> to <code>median(rt)</code> and re-run. Does the shape of the plot change much, for this amount of data?</p>
+          <details class="reveal"><summary>Show what to expect</summary>
+            <p>Hardly at all. The medians are 0.59, 0.495 and 0.445 against means of 0.588, 0.498 and 0.445, because four tidy trials per block contain no outliers to pull the mean away. With real reaction times, which have a long tail of slow responses, the two can differ much more.</p>
+          </details>
+          <p><b>2.</b> Add a fourth block of four made-up reaction times to <code>trials</code>, and update the plot without changing any other line.</p>
+          <details class="reveal"><summary>Show one way to do it</summary>
+<pre class="code" data-lang="R" data-file="first_script.R"><code class="language-r">trials &lt;- tibble(
+  block = rep(1:4, each = 4),
+  rt    = c(0.62, 0.58, 0.60, 0.55,
+            0.50, 0.48, 0.52, 0.49,
+            0.44, 0.46, 0.43, 0.45,
+            0.42, 0.41, 0.43, 0.40)
+)</code></pre>
+            <p>Only the data change: <code>1:3</code> becomes <code>1:4</code>, and four more values join <code>rt</code>. Everything after it works on whatever <code>trials</code> holds, so the summary and the plot pick up the fourth block by themselves.</p>
+          </details>
+          <p><b>3.</b> Change <code>geom_line()</code> to <code>geom_col()</code> and see how the same summary looks as bars instead of a line.</p>
+          <p><b>4.</b> Add <code>filter(rt &lt; 0.55)</code> before <code>group_by(block)</code> and see which rows, and which blocks, disappear.</p>
+          <details class="reveal"><summary>Show what to expect</summary>
+            <p>All four trials in block 1 are 0.55 s or slower, so the whole of block 1 disappears, from the summary and from the plot. Blocks 2 and 3 keep every trial. Tick the filter box in the demo above to step through it.</p>
+          </details>
+        </div>
+        <p>If the Plots pane stays blank after you run the <code>ggplot()</code> lines, check that you ran the whole expression, brackets and all; a plot built across several <code>+</code> continuation lines only appears once R reaches the last line with nothing left to add.</p>
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>From Module 4 onwards, real experiment data, produced by the very PsychoPy scripts you are about to build, replaces this pretend tibble: it arrives as a folder of CSV files, read in with <code>read_csv()</code> instead of typed by hand with <code>tibble()</code>. Everything else here, the pipe, <code>group_by()</code>, <code>summarise()</code>, and <code>ggplot()</code>, reappears unchanged.</p>
+        </div>
+      </section>
+
+
+      <section aria-labelledby="checks">
+        <h2 class="part" id="checks">Before you move on</h2>
+        <p>Tick each check as you complete it. Your ticks are kept in this browser only.</p>
+        <ul class="checklist" data-key="module-3" data-status="check-status-3">
+          <li><input type="checkbox" id="c3-0"><label for="c3-0"><code>first_script.R</code> runs in RStudio, printing a table in the Console and drawing a plot.<span class="hint">Section 3.1</span></label></li>
+          <li><input type="checkbox" id="c3-1"><label for="c3-1">You can say what <code>group_by()</code> and <code>summarise()</code> each do to the rows.<span class="hint">Section 3.2</span></label></li>
+          <li><input type="checkbox" id="c3-2"><label for="c3-2">You have tried the four changes in 3.3.<span class="hint">Section 3.3</span></label></li>
+        </ul>
+        <p class="check-status" id="check-status-3" aria-live="polite"></p>
+
+        <nav class="pager" aria-label="Module navigation">
+          <a class="prev" href="module-2.html"><span class="dir">Previous</span><span class="t">Module 2: From one screen to a whole trial</span></a>
+          <a class="next" href="module-4.html"><span class="dir">Next</span><span class="t">Module 4: Capstone A, a serial reaction time task</span></a>
+        </nav>
+      </section>
+    </article>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <p>Coding Experiments in PsychoPy. Discipline of Psychology, Curtin University. Text licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js" data-manual></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-r.min.js"></script>
+<script src="assets/thumbs.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/demos.js"></script>
+<script type="module" src="assets/rcell.js"></script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Module 0: Getting set up | Coding Experiments in PsychoPy</title>
+<meta name="description" content="Install PsychoPy, R and RStudio, and check that each one works.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 22'><rect width='32' height='22' rx='2' fill='%23808080'/><circle cx='16' cy='11' r='4' fill='white'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="index.html"><span class="wordmark-glyph" aria-hidden="true"></span>Coding Experiments in PsychoPy</a>
+    <nav class="topnav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="index.html#modules">Modules</a>
+      <a href="troubleshooting.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="module-banner">
+    <div class="module-head">
+      <div>
+        <p class="kicker">Module 0</p>
+        <h1>Getting set up</h1>
+        <p class="lede">You will install two things: PsychoPy, which runs your experiments, and R with RStudio, which analyses the data they produce.</p>
+        <p class="build-line"><b>You will finish with</b> both installed, each printing its version number. <span class="lang py">Python</span><span class="lang r">R</span></p>
+      </div>
+      <div class="banner-art" data-thumb="0"></div>
+    </div>
+  </div>
+
+  <div class="module-body">
+    <nav class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <p class="toc-part py">PsychoPy</p>
+      <ol>
+        <li><a href="#studio">0.1 PsychoPy Studio</a></li>
+        <li><a href="#alternatives">0.2 Standalone and pip</a></li>
+        <li><a href="#coder-runner">0.3 The Coder and the Runner</a></li>
+        <li><a href="#check-psychopy">0.4 Checking PsychoPy works</a></li>
+      </ol>
+      <p class="toc-part r">R and RStudio</p>
+      <ol>
+        <li><a href="#install-r">0.5 Installing R</a></li>
+        <li><a href="#install-rstudio">0.6 Installing RStudio</a></li>
+        <li><a href="#positron">0.7 An alternative: Positron</a></li>
+        <li><a href="#panes">0.8 RStudio’s panes</a></li>
+        <li><a href="#tidyverse">0.9 Installing the tidyverse</a></li>
+        <li><a href="#check-r">0.10 Checking R works</a></li>
+      </ol>
+      <ol>
+        <li><a href="#checks">Before you move on</a></li>
+      </ol>
+    </nav>
+
+    <article class="content">
+      <div class="os-chooser" role="group" aria-labelledby="os-label">
+        <span class="os-label" id="os-label">Show instructions for</span>
+        <span class="os-options">
+          <label><input type="radio" name="os" value="windows"><span>Windows</span></label>
+          <label><input type="radio" name="os" value="mac"><span>macOS</span></label>
+          <label><input type="radio" name="os" value="linux"><span>Linux</span></label>
+        </span>
+        <span class="os-hint" aria-live="polite"></span>
+      </div>
+
+      <!-- ================= Part A: PsychoPy ================= -->
+      <section class="part-py" aria-labelledby="part-psychopy">
+        <h2 class="part" id="part-psychopy">Installing PsychoPy <span class="lang py">Python</span></h2>
+        <p>Virtually all experiments we run in the Neuroscience Lab at Curtin use PsychoPy. PsychoPy is free, open-source software for running experiments in the behavioural sciences. The experiment itself is ordinary Python, but the package bundles a great deal that you would otherwise have to assemble by hand: precise control of the screen, accurate timing, sound, keyboard and response-box input, and tools for managing trials and saving data.</p>
+        <p>At the time of writing the current release is 2026.1.x, which runs on Python 3.10. You do not need to install Python separately, and with the route below you do not need to install any of PsychoPy’s dependencies by hand either.</p>
+
+        <h3 id="studio"><span class="secnum">0.1</span>The recommended route: PsychoPy Studio</h3>
+        <p>Install PsychoPy Studio. It is a single downloadable installer for each operating system, and the first time you run it, it quietly sets up its own managed Python environment with every dependency PsychoPy needs. That is the main reason to prefer it: one download, and everyone ends up with the same working environment, with none of the package wrangling that used to swallow the first week. Studio is a rebuild of the same application you may have seen before, with the familiar views still present (Builder, Coder and Runner). We will live almost entirely in the Coder.</p>
+        <ol class="steps">
+          <li>Go to <a href="https://www.psychopy.org/download.html">psychopy.org/download.html</a>.</li>
+          <li>Download PsychoPy Studio for your operating system:
+            <span data-os="windows">the <code>.exe</code> installer.</span><span data-os="mac">the <code>.dmg</code> disk image.</span><span data-os="linux">the <code>.AppImage</code> file.</span></li>
+          <li data-os="windows">Run the installer. The install step needs administrator rights, but once it is installed each user keeps their own preferences and environment without needing admin again.</li>
+          <li data-os="mac">Open the <code>.dmg</code> and drag PsychoPy into your Applications folder.</li>
+          <li data-os="linux">Make the <code>.AppImage</code> executable (right-click, Properties, Allow executing, or <code>chmod +x</code> in a terminal) and run it.</li>
+          <li>Launch Studio. The very first start may sit on a message such as “Loading components” while it prepares the environment. Give it a moment, and if it seems stuck, close it and open it once more.</li>
+          <li>Open Preferences and set the view that opens by default to the Coder, so you land in the right place each time.</li>
+        </ol>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>Studio is currently labelled Beta (release 2026.1.x). It is perfectly capable of writing and running everything on this site, but a few rough edges remain, the ones to know about being plugin loading, the Monitor Center, and syncing to Pavlovia. None of those affect the local, Coder-based experiments we build here. If one does bite you, the Standalone version in the next section is the rock-solid fallback and runs the identical code.</p>
+        </div>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>Whichever app you use, turn on <b>Use version</b> (the <code>useVersion</code> setting) once an experiment is finished, so it always runs against the PsychoPy version you wrote and tested it on, even after the app updates. This single habit prevents most “it worked last semester” surprises.</p>
+        </div>
+
+        <h3 id="alternatives"><span class="secnum">0.2</span>Alternatives: Standalone and pip</h3>
+        <p>If you would rather not run beta software, install <b>PsychoPy Standalone</b> instead. It is the tried-and-tested option the PsychoPy team still recommends for an install that simply works, and you fetch it from the same download page as a single installer. Like Studio, it bundles its own Python, every dependency, and the Builder, Coder and Runner. Everything else on this site is identical whichever of the two you choose.</p>
+        <p>If you already manage your own Python environments, you can instead <code>pip install</code> the library into a clean Python 3.10 environment. Newer Python versions are not yet supported for all of PsychoPy’s dependencies, so stay on 3.10:</p>
+<pre class="code" data-lang="Shell" data-os="mac linux"><code class="language-bash">python3.10 -m venv psychopy-env
+source psychopy-env/bin/activate
+pip install psychopy</code></pre>
+<pre class="code" data-lang="Shell" data-os="windows"><code class="language-bash">py -3.10 -m venv psychopy-env
+psychopy-env\Scripts\activate
+pip install psychopy</code></pre>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>This route pulls in a large stack of scientific and multimedia libraries, and on some systems one or two fail to build. It is for confident users only. If that is not you yet, use Studio or Standalone and return to this later.</p>
+        </div>
+
+        <h3 id="coder-runner"><span class="secnum">0.3</span>Meeting the Coder and the Runner</h3>
+        <p>The <b>Coder</b> is a text editor with a Python console attached (Figure 2). You write your experiment here and press the green Run button to launch it. The <b>Runner</b> keeps a list of experiments and runs each one in a fresh process, which is how you will normally launch a finished study, so that nothing in the editor accidentally changes between participants.</p>
+        <p>Switch to the Coder with the Views buttons at the top right of the window; the one circled in red in Figure 1 opens the Coder, and you can switch views at any time. Create a new file, save it as <code>hello.py</code>, and you will write something into it in Module 1.</p>
+        <figure>
+          <img src="assets/img/fig-builder-views.png" width="1582" height="902" loading="lazy" alt="The PsychoPy Builder window. At the top right, under the label Views, three icons sit side by side; the middle one, which opens the Coder, is circled in red.">
+          <figcaption><b>Figure 1.</b> The Builder. The circled button under Views takes you to the Coder.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/img/fig-coder.png" width="1581" height="888" loading="lazy" alt="The PsychoPy Coder: a Files panel on the left, an Editor showing a short Python script in the middle, and a Python Console along the bottom.">
+          <figcaption><b>Figure 2.</b> The Coder: files on the left, your script in the editor, and the Python console underneath.</figcaption>
+        </figure>
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>Everything on this site produces plain-text <code>.csv</code> files with one row per trial. That is exactly the shape <code>readr::read_csv()</code> and the tidyverse expect, so the journey from a finished session to a fitted model is short.</p>
+        </div>
+
+        <h3 id="check-psychopy"><span class="secnum">0.4</span>Checking the install works</h3>
+        <p>Before writing a real experiment, confirm the library loads. In the Coder, create <code>check.py</code> and type the following:</p>
+<pre class="code" data-lang="Python" data-file="check.py"><code class="language-python">import psychopy
+print("PsychoPy version:", psychopy.__version__)</code></pre>
+        <p>To see the output, send the script to the Runner with the button circled in Figure 3, then open the <b>Stdout</b> tab and click Run (Figure 4). You only need this route when troubleshooting; later, a working script can be launched straight from the Coder. The version number should print in the output pane.</p>
+        <figure>
+          <img src="assets/img/fig-send-to-runner.png" width="1581" height="911" loading="lazy" alt="The Coder toolbar with the button that sends the current script to the Runner circled in red and labelled RUNNER.">
+          <figcaption><b>Figure 3.</b> Sending the script from the Coder to the Runner.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/img/fig-runner-stdout.png" width="1582" height="903" loading="lazy" alt="The PsychoPy Runner with the script listed on the left, the Stdout tab selected on the right, and the green Run button in the toolbar circled in red.">
+          <figcaption><b>Figure 4.</b> In the Runner, select the Stdout tab and click Run.</figcaption>
+        </figure>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>If you see <code>ModuleNotFoundError</code> instead of a version number, the script is running under a different Python from the one PsychoPy lives in. Inside Studio or Standalone this should not happen, because the Run button always uses PsychoPy’s own managed environment. It usually means the script was launched from another editor or terminal.</p>
+        </div>
+      </section>
+
+      <!-- ================= Part B: R and RStudio ================= -->
+      <section class="part-r" aria-labelledby="part-r">
+        <h2 class="part" id="part-r">Installing R and RStudio <span class="lang r">R</span></h2>
+        <p>R is the language your analysis scripts are written in; RStudio is the application you write and run them in. The two are separate downloads from separate places, installed in that order: R first, then RStudio, which finds and uses whichever R it detects on your machine. At the time of writing the current release series is R 4.6.x and RStudio 2026.07.x. Every analysis script on this site is written with the tidyverse, a single bundle of packages you will install once and load at the top of almost every script you write.</p>
+
+        <h3 id="install-r"><span class="secnum">0.5</span>Installing R</h3>
+        <p>R is maintained by the R Foundation and distributed through CRAN, the Comprehensive R Archive Network. It is not made by the same organisation as RStudio.</p>
+        <ol class="steps">
+          <li>Go to <a href="https://cran.r-project.org">cran.r-project.org</a>.</li>
+          <li data-os="windows">Choose <b>Download R for Windows</b>, open the <b>base</b> subdirectory, and run the installer, accepting the defaults.</li>
+          <li data-os="mac">Choose <b>Download R for macOS</b>, download the <code>.pkg</code> that matches your chip (Apple silicon or Intel), and run it. If you are not sure which chip you have, Apple menu &gt; About This Mac tells you.</li>
+          <li data-os="linux">Install from your distribution’s package manager rather than compiling from source. On Ubuntu or Debian, for example: <code>sudo apt install r-base r-base-dev</code>.</li>
+        </ol>
+        <p>You now have R itself, but you will rarely open it directly. RStudio is the window you will actually work in, and the next section installs it.</p>
+
+        <h3 id="install-rstudio"><span class="secnum">0.6</span>Installing RStudio Desktop</h3>
+        <ol class="steps">
+          <li>Go to <a href="https://posit.co/download/rstudio-desktop/">posit.co/download/rstudio-desktop</a>.</li>
+          <li>Download the free Desktop edition for your operating system.</li>
+          <li>Run the installer and accept the defaults.</li>
+          <li>Launch RStudio. If the Console pane (bottom left) prints an R version number as it starts, RStudio has found your R installation and you are ready to go.</li>
+        </ol>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>Install R before RStudio, not the other way round, so RStudio has something to find on first launch. If you install a newer R later, restart RStudio afterwards so it notices. RStudio settles on an R version for the length of a session and does not re-check while it is running.</p>
+        </div>
+
+        <h3 id="positron"><span class="secnum">0.7</span>An alternative: Positron</h3>
+        <p>RStudio’s maker, Posit, has more recently released <b>Positron</b>, a newer editor built on the same engine as VS Code, that runs R and Python side by side in one application. If you already use VS Code, or you code in both languages, it is worth trying; download it from <a href="https://positron.posit.co">positron.posit.co</a>. The R code on this site runs identically in either application, since the code itself does not know or care which editor typed it. RStudio remains the more common choice for R-only teaching, and it is the one whose menu names these modules use (Session &gt; Set Working Directory, for instance). Positron offers the same operations under slightly different names.</p>
+
+        <h3 id="panes"><span class="secnum">0.8</span>Meeting RStudio’s panes</h3>
+        <p>RStudio opens as four panes (Figure 5). Top left is the <b>Source</b> pane, where you write and save scripts (<code>.R</code> files); nothing here runs until you tell it to. Bottom left is the <b>Console</b>, where R actually executes code and prints output. You can type directly into it, but anything typed only there is not saved anywhere. Top right holds <b>Environment</b>, a live list of every object you have created and its current value, and History. Bottom right holds Files, <b>Plots</b>, Packages and Help, and is where a plot drawn with ggplot will appear.</p>
+        <figure>
+          <img src="assets/img/fig-rstudio-panes.png" width="1182" height="890" loading="lazy" alt="RStudio divided into four panes: Source at top left, Console at bottom left, Environment and History at top right, and Files, Plots, Packages and Help at bottom right.">
+          <figcaption><b>Figure 5.</b> RStudio’s four panes.</figcaption>
+        </figure>
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Open a new script with File &gt; New File &gt; R Script (<kbd><span class="mod">Ctrl</span>+Shift+N</kbd>). Type <code>2 + 2</code> into it, place your cursor on that line, and press <kbd><span class="mod">Ctrl</span>+Enter</kbd>. What happens in the Console, and where does your cursor go?</p>
+          <details class="reveal"><summary>Show what to expect</summary>
+            <p>The line runs in the Console below, which prints <code>[1] 4</code>, and the cursor moves to the next line, ready to run again. This run-the-current-line habit is how you will work through every R script on this site.</p>
+          </details>
+        </div>
+
+        <h3 id="tidyverse"><span class="secnum">0.9</span>Installing the tidyverse</h3>
+        <p>Base R can do everything these modules need, but the tidyverse makes it far more readable, and every analysis script from here on assumes it. It is not one package but a curated bundle of about two dozen, of which you will meet dplyr (filtering, grouping, summarising), ggplot2 (plotting), readr (reading files), tidyr (reshaping) and purrr (looping over files) by name.</p>
+        <p>Type this once into the Console and press <kbd>Enter</kbd>:</p>
+<pre class="code" data-lang="R"><code class="language-r">install.packages("tidyverse")</code></pre>
+        <p>This downloads a genuinely large bundle, so it can take several minutes the first time. If you are asked whether to install “from source”, the answer is almost always no: take the pre-built binary.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>You only <b>install</b> a package once per machine, but you <b>load</b> it in every new script with <code>library(tidyverse)</code>, the same way every analysis script on this site begins. Installing puts the package on your hard drive; loading makes it available in the current session. Forgetting <code>library()</code> is the single commonest reason a script that worked yesterday now reports <code>could not find function</code>.</p>
+        </div>
+
+        <h3 id="check-r"><span class="secnum">0.10</span>Checking the install works</h3>
+        <p>Type the following into the Console, one line at a time:</p>
+<pre class="code" data-lang="R"><code class="language-r">library(tidyverse)
+R.version.string</code></pre>
+        <p>You should see a short block of package names attaching, followed by your R version. The block looks alarming the first time, but it is the tidyverse loading its members, not an error.</p>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>If <code>library(tidyverse)</code> instead reports <code>there is no package called ‘tidyverse’</code>, the install in 0.9 did not complete. Run <code>install.packages("tidyverse")</code> again and watch for error text partway through, which usually names a missing system dependency.</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="checks">
+        <h2 class="part" id="checks">Before you move on</h2>
+        <p>Tick each check as you complete it. Your ticks are kept in this browser only.</p>
+        <ul class="checklist" data-key="module-0" data-status="check-status-0">
+          <li><input type="checkbox" id="c0-pp"><label for="c0-pp">PsychoPy prints its version number from <code>check.py</code>.<span class="hint">Section 0.4</span></label></li>
+          <li><input type="checkbox" id="c0-coder"><label for="c0-coder">PsychoPy opens in the Coder by default, and <code>hello.py</code> is saved and ready.<span class="hint">Sections 0.1 and 0.3</span></label></li>
+          <li><input type="checkbox" id="c0-rstudio"><label for="c0-rstudio">RStudio’s Console shows an R version as it starts.<span class="hint">Section 0.6</span></label></li>
+          <li><input type="checkbox" id="c0-line"><label for="c0-line">You can run one line of a script with <kbd><span class="mod">Ctrl</span>+Enter</kbd>.<span class="hint">Section 0.8</span></label></li>
+          <li><input type="checkbox" id="c0-tidy"><label for="c0-tidy"><code>library(tidyverse)</code> loads without an error.<span class="hint">Section 0.10</span></label></li>
+        </ul>
+        <p class="check-status" id="check-status-0" aria-live="polite"></p>
+
+        <nav class="pager" aria-label="Module navigation">
+          <a class="prev" href="index.html"><span class="dir">Back to</span><span class="t">Home</span></a>
+          <a class="next" href="module-1.html"><span class="dir">Next</span><span class="t">Module 1: Your first Python script</span></a>
+        </nav>
+      </section>
+    </article>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <p>Coding Experiments in PsychoPy. Discipline of Psychology, Curtin University. Text licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>. Screenshots of PsychoPy and RStudio are included to show their interfaces.</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js" data-manual></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-r.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="assets/thumbs.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

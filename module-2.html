@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Module 2: From one screen to a whole trial | Coding Experiments in PsychoPy</title>
+<meta name="description" content="Draw several stimuli, wait safely, time key presses, read stimuli from a file and save one row per trial.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 22'><rect width='32' height='22' rx='2' fill='%23808080'/><circle cx='16' cy='11' r='4' fill='white'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="index.html"><span class="wordmark-glyph" aria-hidden="true"></span>Coding Experiments in PsychoPy</a>
+    <nav class="topnav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="index.html#modules">Modules</a>
+      <a href="troubleshooting.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="module-banner">
+    <div class="module-head">
+      <div>
+        <p class="kicker">Module 2</p>
+        <h1>From one screen to a whole trial</h1>
+        <p class="lede">You build, one at a time, every piece a real experiment needs: several stimuli on screen, safe waits, precise key timing, stimuli read from a file, and one saved row per trial.</p>
+        <p class="build-line"><b>You will finish with</b> a small script that saves one tidy row per trial, and the skeleton every later experiment fills in. <span class="lang py">Python</span></p>
+      </div>
+      <div class="banner-art" data-thumb="2"></div>
+    </div>
+  </div>
+
+  <div class="module-body">
+    <nav class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <p class="toc-part py">Python</p>
+      <ol>
+        <li><a href="#drawing">2.1 Several stimuli at once</a></li>
+        <li><a href="#waiting">2.2 Waiting, with a way out</a></li>
+        <li><a href="#keyboard">2.3 Keyboard timing</a></li>
+        <li><a href="#files">2.4 Stimuli in a file</a></li>
+        <li><a href="#handler">2.5 The ExperimentHandler</a></li>
+        <li><a href="#skeleton">2.6 The shape of every experiment</a></li>
+      </ol>
+      <ol>
+        <li><a href="#checks">Before you move on</a></li>
+      </ol>
+    </nav>
+
+    <article class="content">
+
+      <section class="part-py" aria-labelledby="part-2">
+        <h2 class="part" id="part-2">The pieces of a real experiment <span class="lang py">Python</span></h2>
+        <p>Module 1 opened a window, drew one message and waited for a key. That is the whole of a PsychoPy program in miniature, but a real experiment repeats that cycle hundreds of times, draws more than one thing at once, reads the keyboard with proper timing, and saves a tidy row for every repetition. This module builds each of those pieces on its own, in the smallest program that shows it working, so that when the two capstones assemble them you are recognising old friends rather than meeting five new ideas at once. Nothing here is throwaway: every block reappears almost unchanged in the serial reaction time task.</p>
+        <p>Work through the sections in order and type each snippet into a scratch file you can throw away afterwards, say <code>bridge.py</code>. By the end you will have written, in isolation, every mechanism the capstone leans on.</p>
+
+        <h3 id="drawing"><span class="secnum">2.1</span>Drawing more than one thing, and keeping it on screen</h3>
+        <p>Module 1 drew a single stimulus. The rule that governs every display in PsychoPy is simple and worth saying once more: only what you have drawn since the last flip appears at the next one. So if you want several things on screen together, you draw them all, then flip once. And if you want something to stay on screen across many flips, you draw it again before every flip. It never lingers on its own. (The <a href="module-1.html#demo-flip">draw-and-flip demo in Module 1</a> shows this happening.)</p>
+<pre class="code" data-lang="Python" data-file="bridge.py"><code class="language-python">from psychopy import visual, core, event
+
+win = visual.Window(size=[1280, 720], fullscr=False,
+                    color='black', units='height')
+
+# three stimuli, created once
+title = visual.TextStim(win, text='Two circles and a label',
+                        pos=(0, 0.35), color='white', height=0.05)
+left  = visual.Circle(win, radius=0.08, pos=(-0.2, 0),
+                      lineColor='grey', fillColor='grey')
+right = visual.Circle(win, radius=0.08, pos=(0.2, 0),
+                      lineColor='grey', fillColor=None)
+
+# draw all three, then reveal them together in one flip
+title.draw()
+left.draw()
+right.draw()
+win.flip()
+
+event.waitKeys(keyList=['space'])
+win.close()
+core.quit()</code></pre>
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Comment out <code>right.draw()</code> and run again. What happens to the right circle?</p>
+          <details class="reveal"><summary>Show what to expect</summary>
+            <p>The right circle vanishes, even though you created it, because you never drew it before the flip. Creating a stimulus and drawing it are two separate acts: creation happens once, drawing happens on every frame it should be visible.</p>
+          </details>
+        </div>
+        <p>The serial reaction time task uses exactly this pattern. Four circles are created once, and a small helper redraws all four before every flip so the display never flickers. That helper is nothing more than the three draw calls above, wrapped in a function so you do not repeat yourself:</p>
+<pre class="code" data-lang="Python" data-file="bridge.py"><code class="language-python">circles = [left, right]
+
+def draw_circles():
+    for c in circles:
+        c.draw()
+
+draw_circles()   # draws every circle in the list
+win.flip()</code></pre>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>A list of stimuli plus a loop that draws each one is the standard way to manage a fixed set of objects. When you later see <code>for c in circles: c.draw()</code> in the capstone, it is this and nothing more.</p>
+        </div>
+
+        <h3 id="waiting"><span class="secnum">2.2</span>Waiting properly, and always leaving a way out</h3>
+        <p>Two waits appear constantly in experiments: a fixed pause with nothing to respond to (a blank gap between trials, or a word shown for a set time), and a pause that ends when the participant presses a key. The first is <code>core.wait(seconds)</code>. Never use Python’s own <code>time.sleep()</code> for this; <code>core.wait()</code> is written to co-operate with the screen refresh, and <code>sleep</code> is not.</p>
+        <p>The trouble with a bare <code>core.wait()</code> is that the keyboard is dead during it, so a participant cannot quit. In a full-screen study that is a real problem. The fix is a tiny helper that waits in small steps and checks for the Escape key on each one. Both capstones use exactly this, under the name <code>wait_with_quit</code>:</p>
+<pre class="code" data-lang="Python" data-file="bridge.py"><code class="language-python">from psychopy import visual, core, event
+
+win = visual.Window(size=[1280, 720], fullscr=False,
+                    color='black', units='height')
+
+def quit_cleanly():
+    win.close()
+    core.quit()
+
+def wait_with_quit(duration):
+    timer = core.Clock()
+    while timer.getTime() &lt; duration:
+        if 'escape' in event.getKeys(keyList=['escape']):
+            quit_cleanly()
+
+msg = visual.TextStim(win, text='Waiting 3 s. Press ESC to quit.',
+                      color='white', height=0.05)
+msg.draw()
+win.flip()
+wait_with_quit(3.0)
+quit_cleanly()</code></pre>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p><code>quit_cleanly()</code> is defined once and called from everywhere an exit might happen. This matters more than it looks: in the capstones the same function also closes the data file before quitting, so that pressing Escape half-way through still saves the trials collected so far. Get into the habit now of routing every exit through one function rather than scattering <code>win.close()</code> and <code>core.quit()</code> through your code.</p>
+        </div>
+
+        <h3 id="keyboard"><span class="secnum">2.3</span>Reading the keyboard with trustworthy timing</h3>
+        <p>The <code>event</code> module from Module 1 is fine for pressing space to move on, but its timing is only as good as your drawing loop. For reaction times you want a tool that timestamps each press against a hardware clock, independent of when your loop happens to look. That tool is the <code>Keyboard</code> object from <code>psychopy.hardware</code>. You create it once, reset its clock at the moment the stimulus appears, then ask it for presses.</p>
+<pre class="code" data-lang="Python" data-file="bridge.py"><code class="language-python">from psychopy import visual, core
+from psychopy.hardware import keyboard
+
+win = visual.Window(size=[1280, 720], fullscr=False,
+                    color='black', units='height')
+kb = keyboard.Keyboard()
+
+target = visual.TextStim(win, text='PRESS  F  OR  J', color='white', height=0.06)
+
+target.draw()
+kb.clearEvents()          # discard anything pressed before now
+win.flip()
+kb.clock.reset()          # start timing the instant the target is visible
+
+keys = kb.getKeys(keyList=['f', 'j', 'escape'], waitRelease=False)
+while not keys:
+    keys = kb.getKeys(keyList=['f', 'j', 'escape'], waitRelease=False)
+
+press = keys[0]
+print('You pressed', press.name, 'after', round(press.rt, 3), 'seconds')
+win.close()
+core.quit()</code></pre>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>The order of the last three setup lines is the whole game. <code>kb.clearEvents()</code> throws away stray presses from before the trial; the <code>win.flip()</code> puts the target on screen; and <code>kb.clock.reset()</code> starts the clock. Reset the clock before the flip and every reaction time is inflated by up to a whole frame, because the flip waits for the next screen refresh before the target appears. The capstone repeats this exact sequence on every trial, so it is worth getting straight here where there is only one of them.</p>
+        </div>
+
+        <div class="demo-block" id="demo-clock">
+          <p class="demo-title"><b>Try it: when does the clock start?</b> Each trial draws the target, waits for the flip, and then the participant responds. Run a few trials each way and compare the recorded reaction times with the true ones. The screen refreshes every 16.7 ms (60 Hz).</p>
+          <div class="demo-controls">
+            <label><input type="radio" name="clock-order" value="after" checked> <code>kb.clock.reset()</code> after <code>win.flip()</code></label>
+            <label><input type="radio" name="clock-order" value="before"> before <code>win.flip()</code></label>
+          </div>
+          <div class="demo-controls">
+            <button type="button" class="btn primary" id="clock-run">Run a trial</button>
+            <button type="button" class="btn" id="clock-clear">Clear</button>
+          </div>
+          <div id="clock-svg"></div>
+          <p class="demo-note-line" id="clock-note" aria-live="polite"></p>
+          <div class="tablewrap" id="clock-table"></div>
+        </div>
+
+        <p>Each key object the <code>Keyboard</code> hands back carries a <code>.name</code> (the key) and a <code>.rt</code> (its reaction time, measured from the last clock reset). A missed trial is simply the case where the loop reaches its deadline and no key was collected, so both stay unset. That is how the capstone records a miss without any special handling.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>In the capstone the wait loop is bounded by a deadline, <code>while kb.clock.getTime() &lt; MAX_RT:</code>, rather than looping forever. The idea is identical; it just also gives up after a couple of seconds and records the trial as a miss.</p>
+        </div>
+
+        <h3 id="files"><span class="secnum">2.4</span>Keeping your stimuli in a file, not the code</h3>
+        <p>Sooner or later you have a list of words, images or item texts too long to sit comfortably in the program. PsychoPy reads a CSV of them for you with <code>data.importConditions</code>, which hands back a list of dictionaries, one per row, with the column headings as keys. Editing, translating or reordering the stimuli then means editing a spreadsheet, not the code.</p>
+        <p>Suppose a file <code>words.csv</code> holds a single column headed <code>word</code> with one word per row. Reading it is one line:</p>
+<pre class="code" data-lang="Python" data-file="bridge.py"><code class="language-python">from psychopy import data
+
+rows = data.importConditions('words.csv')   # list of dicts, one per row
+words = [row['word'] for row in rows]        # pull out just the words
+print(len(words), 'words loaded; first is', words[0])</code></pre>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>The key you ask for must match the column heading exactly, spaces and capitals included. <code>row['word']</code> finds a column headed <code>word</code>, not <code>Word</code> and not <code>" word"</code>. A mismatch raises <code>KeyError</code>, which is the single commonest error when reading a conditions file.</p>
+        </div>
+        <p>The list comprehension <code>[row['word'] for row in rows]</code> is worth reading slowly, because it recurs throughout the capstones. It means: take each row in turn, pull out its word, and collect the results into a new list. Both capstones and both questionnaires read their stimuli this way.</p>
+
+        <h3 id="handler"><span class="secnum">2.5</span>Saving one tidy row per trial: the ExperimentHandler</h3>
+        <p>Module 1 saved nothing, because there was nothing worth saving. From here on every experiment writes a CSV with one row per trial, and the object that does it is the <code>ExperimentHandler</code>. You hand it the participant details once, then on every trial you call <code>addData</code> for each value you want in a column and <code>nextEntry</code> to close the row. When the experiment ends it writes a tidy, R-ready file by itself.</p>
+        <p>Here is the whole life cycle in one runnable toy: a dialog for the participant code, a handful of pretend trials, and a clean close.</p>
+<pre class="code" data-lang="Python" data-file="bridge.py"><code class="language-python">import os
+from psychopy import gui, data, core
+
+# 1. Who is sitting down
+info = {'participant': '', 'session': '001'}
+dlg = gui.DlgFromDict(info, title='Demo')
+if not dlg.OK:
+    core.quit()
+info['date'] = data.getDateStr()
+
+# 2. Where the data go (a data/ folder, a unique filename)
+os.makedirs('data', exist_ok=True)
+filename = os.path.join('data', f"{info['participant']}_demo_{info['date']}")
+thisExp = data.ExperimentHandler(name='demo', extraInfo=info,
+                                 dataFileName=filename)
+
+# 3. A few pretend trials
+for trial_number in range(1, 6):
+    pretend_rt = 0.5 + trial_number * 0.01
+    thisExp.addData('trial', trial_number)
+    thisExp.addData('rt', pretend_rt)
+    thisExp.nextEntry()          # close this row, start the next
+
+# 4. Close cleanly: this is what actually writes the CSV
+thisExp.close()
+core.quit()</code></pre>
+        <p>Run it, type a participant code into the dialog, and look in the <code>data</code> folder. You will find a CSV with a row per trial and, on every row, the participant, session and date you typed once. That last point is the quiet convenience of the handler.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>Everything in <code>extraInfo</code> is copied onto every row automatically. That is exactly why <code>participant</code> sits beside each trial in R without your ever adding it inside the loop. You set it once, in the dialog, and the handler does the rest.</p>
+        </div>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>The file is written by <code>thisExp.close()</code>, not trickle-fed as you go. A script that crashes or is force-quit before the close loses the run. This is the deeper reason the capstones route every exit, including the Escape key, through a <code>quit_cleanly()</code> that closes the handler first. Data safety and a clean exit are the same habit.</p>
+        </div>
+
+        <div class="demo-block" id="demo-handler">
+          <p class="demo-title"><b>Try it: where do the rows go?</b> Step through the toy script for participant P01 and watch the rows build up in memory. Then start again and press Escape half-way through.</p>
+          <div class="demo-controls">
+            <button type="button" class="btn primary" id="hd-step">Run the next line</button>
+            <button type="button" class="btn" id="hd-all">Run to the end</button>
+            <button type="button" class="btn" id="hd-crash">Press Escape now</button>
+            <button type="button" class="btn" id="hd-reset">Start again</button>
+          </div>
+          <pre class="listing" id="hd-code" aria-label="The script, with the line just run highlighted"></pre>
+          <div class="hd-grid">
+            <div><h4>In memory (the handler)</h4><div class="hd-pane" id="hd-mem"></div></div>
+            <div><h4>On disk (the data folder)</h4><div class="hd-pane" id="hd-disk" aria-live="polite"></div></div>
+          </div>
+          <p class="demo-note-line" id="hd-note" aria-live="polite"></p>
+        </div>
+
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>The handler writes exactly the shape <code>readr::read_csv()</code> wants: one row per trial, one column per variable, named as you named them in <code>addData</code>. Name your columns in short, lower-case, no-spaces style now (<code>rt</code>, not <code>"Reaction Time"</code>) and the R side needs no renaming later.</p>
+        </div>
+
+        <h3 id="skeleton"><span class="secnum">2.6</span>The shape of every experiment from here</h3>
+        <p>Stand back and the five pieces line up into a single skeleton that the rest of the modules simply fill in. A dialog and a handler at the top; stimuli created once; then a loop that, on each pass, draws the stimuli, flips, times a response with the <code>Keyboard</code>, and records the trial; and a clean close at the end. In outline:</p>
+<pre class="code" data-lang="Python" data-file="skeleton.py"><code class="language-python"># --- setup, once ---
+#   dialog for participant details
+#   ExperimentHandler with those details
+#   create the window, the stimuli, the Keyboard
+#   (optionally) read stimuli from a file
+
+# --- the trial loop ---
+# for each trial:
+#     draw the stimuli
+#     kb.clearEvents(); win.flip(); kb.clock.reset()
+#     collect a response (with a deadline)
+#     work out whether it was correct
+#     addData(...) for each column; nextEntry()
+
+# --- close, once ---
+#   thisExp.close(); win.close(); core.quit()</code></pre>
+        <p>The serial reaction time task in Module 4 is precisely this skeleton with four circles as the stimuli and a repeating sequence deciding which one lights up. The recognition memory task in Module 5 is the same skeleton with two phases. Once you see the skeleton, the capstones stop being long and start being familiar.</p>
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Before moving on, write the skeleton out from memory as comments in an empty file, then check it against the outline above. The parts you cannot recall are exactly the parts to reread. Re-deriving the shape is far more useful than rereading our version of it.</p>
+        </div>
+      </section>
+
+
+      <section aria-labelledby="checks">
+        <h2 class="part" id="checks">Before you move on</h2>
+        <p>Tick each check as you complete it. Your ticks are kept in this browser only.</p>
+        <ul class="checklist" data-key="module-2" data-status="check-status-2">
+          <li><input type="checkbox" id="c2-0"><label for="c2-0">Commenting out a <code>draw()</code> makes that stimulus disappear, and you know why.<span class="hint">Section 2.1</span></label></li>
+          <li><input type="checkbox" id="c2-1"><label for="c2-1">Escape quits during <code>wait_with_quit()</code>.<span class="hint">Section 2.2</span></label></li>
+          <li><input type="checkbox" id="c2-2"><label for="c2-2">Your keyboard script prints a reaction time, with the clock reset after the flip.<span class="hint">Section 2.3</span></label></li>
+          <li><input type="checkbox" id="c2-3"><label for="c2-3">The toy script writes a CSV to <code>data/</code>, with participant on every row.<span class="hint">Section 2.5</span></label></li>
+          <li><input type="checkbox" id="c2-4"><label for="c2-4">You can write the skeleton from memory.<span class="hint">Section 2.6</span></label></li>
+        </ul>
+        <p class="check-status" id="check-status-2" aria-live="polite"></p>
+
+        <nav class="pager" aria-label="Module navigation">
+          <a class="prev" href="module-1.html"><span class="dir">Previous</span><span class="t">Module 1: Your first Python script</span></a>
+          <a class="next" href="module-3.html"><span class="dir">Next</span><span class="t">Module 3: Your first R script</span></a>
+        </nav>
+      </section>
+    </article>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <p>Coding Experiments in PsychoPy. Discipline of Psychology, Curtin University. Text licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js" data-manual></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-r.min.js"></script>
+<script src="assets/thumbs.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/coder-demos.js"></script>
+</body>
+</html>

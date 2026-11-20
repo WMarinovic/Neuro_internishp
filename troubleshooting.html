@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Troubleshooting | Coding Experiments in PsychoPy</title>
+<meta name="description" content="The errors that catch almost everyone in Python and PsychoPy, with the symptom and the fix, searchable by error message.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 22'><rect width='32' height='22' rx='2' fill='%23808080'/><circle cx='16' cy='11' r='4' fill='white'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="index.html"><span class="wordmark-glyph" aria-hidden="true"></span>Coding Experiments in PsychoPy</a>
+    <nav class="topnav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="index.html#modules">Modules</a>
+      <a href="troubleshooting.html" aria-current="page">Troubleshooting</a>
+      <a href="where-next.html">Where to go next</a>
+    </nav>
+  </div>
+</header>
+<main id="main">
+  <div class="module-banner">
+    <div class="module-head ref-head">
+      <div>
+        <p class="kicker">Reference</p>
+        <h1>Troubleshooting</h1>
+        <p class="lede">The errors that catch almost everyone, grouped into plain Python mistakes and PsychoPy-specific ones, each with the symptom and the fix. It is worth reading early, not only when something breaks.</p>
+      </div>
+    </div>
+  </div>
+  <div class="ref-body">
+    <div class="ref-content">
+      <p>Almost every error you meet in your first months is one of a small set. Learning to read the error message and recognise the pattern will save you more time than anything else on this site. The questions below are phrased as you are likely to experience them.</p>
+      <div class="ts-search">
+        <label for="ts-q">Search by symptom or error message</label>
+        <input type="search" id="ts-q" placeholder="for example: KeyError, blank, slider" autocomplete="off">
+        <p class="ts-count" id="ts-count" aria-live="polite"></p>
+      </div>
+      <section class="ts-group" aria-labelledby="ts-python">
+        <h2 id="ts-python">Python: the usual suspects</h2>
+        <details class="qa"><summary>I get an IndentationError, or the wrong lines seem to run.</summary><p>Python uses indentation to decide what belongs inside a <code>for</code>, <code>if</code>, <code>def</code> or <code>while</code>. Everything in a block must be indented by the same amount; use four spaces and never mix spaces with tabs. If a line that should sit inside a loop is flush to the left margin, it runs once at the end instead of on every pass, which looks baffling until you see the indentation. Set the Coder to show whitespace and to insert spaces, not tabs.</p></details>
+        <details class="qa"><summary>NameError: name '...' is not defined.</summary><p>Almost always a typo or the wrong case. Python is case-sensitive, so <code>win</code> and <code>Win</code> are different names, and <code>getKeys</code> is not <code>getkeys</code>. Check the spelling and capitalisation against the line where you first created the name. The same error appears if you use a variable on a line above the one that creates it.</p></details>
+        <details class="qa"><summary>A variable changed by itself, or I get TypeError: 'list' object is not callable.</summary><p>You reused a name. If you name a variable <code>list</code>, <code>sum</code>, <code>str</code>, or after a module you imported, you overwrite the original and it stops behaving as a function. Give your variables their own distinct names and steer clear of the names of built-ins and modules.</p></details>
+        <details class="qa"><summary>SyntaxError pointing at a line that looks perfectly fine.</summary><p>Look at the line above it. A missing colon at the end of a <code>for</code>, <code>if</code> or <code>def</code>, or an unclosed bracket or quote, makes Python stumble on the next line. Count your opening and closing parentheses, and check that every <code>for</code>, <code>if</code> and <code>def</code> ends in a colon.</p></details>
+        <details class="qa"><summary>My condition never fires, or I assigned when I meant to compare.</summary><p>A single <code>=</code> assigns a value; a double <code>==</code> compares. <code>if response = 3</code> is an error, while <code>if response == 3</code> is the test you wanted.</p></details>
+        <details class="qa"><summary>Numbers from the dialog or the CSV behave like text.</summary><p>Values typed into the participant dialog and read from a CSV arrive as strings. <code>'2' + 1</code> fails, and <code>'10' &lt; '9'</code> is <code>True</code> because it compares text character by character. Convert with <code>int()</code> or <code>float()</code> before doing arithmetic or numeric comparisons. This is exactly why Module 6 writes <code>int(slider.getRating())</code>.</p></details>
+        <details class="qa"><summary>My list index is off by one (IndexError: list index out of range).</summary><p>Lists count from zero, so a four-item list has indices 0 to 3. That is why position 1 maps to <code>POSITIONS_X[pos - 1]</code>. Reaching past the last index raises that error; an index of 4 in a four-item list is one too far.</p></details>
+        <details class="qa"><summary>I called a function but nothing happened.</summary><p>You left off the parentheses. <code>core.quit</code> merely refers to the function and does nothing; <code>core.quit()</code> actually calls it. The same applies to <code>win.flip</code> versus <code>win.flip()</code>.</p></details>
+      </section>
+      <section class="ts-group" aria-labelledby="ts-psychopy">
+        <h2 id="ts-psychopy">PsychoPy: the usual suspects</h2>
+        <details class="qa"><summary>I draw something but the screen stays blank.</summary><p>You forgot <code>win.flip()</code>. Drawing paints to a hidden buffer; the flip reveals it on screen. Every visible change needs a flip, and only what you have drawn since the last flip will appear. The <a href='module-1.html#demo-flip'>draw-and-flip demo in Module 1</a> shows this.</p></details>
+        <details class="qa"><summary>My stimulus flickers or vanishes between frames.</summary><p>You are only drawing it on some flips. Anything that should stay on screen must be drawn again before every flip. This is why the reaction-time task redraws all four circles on each trial rather than assuming they linger.</p></details>
+        <details class="qa"><summary>I’m trapped in a full-screen window and cannot get out.</summary><p>Always build in an escape route that closes the window and calls <code>core.quit()</code>. Develop with <code>fullscr=False</code> so you can click away to your editor, and switch to <code>fullscr=True</code> only for real testing. If you are stuck, <kbd>Alt+Tab</kbd> (Windows) or <kbd>Cmd+Tab</kbd> (macOS) will get you out.</p></details>
+        <details class="qa"><summary>My reaction times look too long, or suspiciously constant.</summary><p>Two usual causes. First, timing with <code>time.sleep()</code> or by counting loops instead of using <code>core.wait()</code> and the screen refresh. Second, resetting the response clock at the wrong moment: reset the keyboard clock immediately after the <code>win.flip()</code> that shows the stimulus, never before it, or every time is inflated. The <a href='module-2.html#demo-clock'>clock demo in Module 2</a> shows by how much.</p></details>
+        <details class="qa"><summary>Sizes and positions come out wrong.</summary><p>Check the window’s units. In height units everything is a fraction of the window height and the screen runs from −0.5 to +0.5, so a size of 0.05 is sensible. The same number in <code>pix</code> would be a few pixels. Choose one unit and stay with it.</p></details>
+        <details class="qa"><summary>KeyError: 'item_text' when reading my conditions file.</summary><p>The column heading in your CSV does not match the key you ask for in code. Headings are case- and space-sensitive, so <code>item_text</code> is not <code>Item Text</code>. Open the file and check the header row matches exactly.</p></details>
+        <details class="qa"><summary>The rating slider keeps the previous answer.</summary><p>Call <code>slider.reset()</code> at the top of each item. Without it the widget carries the last rating forward and silently biases every response after the first.</p></details>
+        <details class="qa"><summary>ValueError: invalid literal for int() with a Slider rating.</summary><p>A radio Slider returns the label text, not a number. With word labels such as “Sometimes”, <code>int()</code> fails; look the label up in your list of labels instead, as Module 6 does with <code>RESP_LABELS.index(rating_label)</code>.</p></details>
+        <details class="qa"><summary>My data file is empty, or there is no file at all.</summary><p>Make sure you call <code>thisExp.nextEntry()</code> after each trial and close cleanly with <code>thisExp.close()</code>. A script that crashes or is force-quit before saving loses the run, which is why we route every exit through <code>quit_cleanly()</code> so the handler always saves first. Also confirm the output folder exists with <code>os.makedirs('data', exist_ok=True)</code>.</p></details>
+        <details class="qa"><summary>Opening the CSV in Excel scrambled my data.</summary><p>Excel can change the separator, reinterpret numbers, turn values into dates and alter the text encoding, and it is worse under some regional settings. Read the raw file directly in R rather than re-saving it from a spreadsheet; if you must look in Excel, use its import dialog instead of double-clicking the file.</p></details>
+      </section>
+      <section class="ts-group" aria-labelledby="ts-site">
+        <h2 id="ts-site">This website</h2>
+        <details class="qa"><summary>The Run button in an R or Python box does nothing.</summary><p>The boxes run only on the live website. A page opened from your own computer (its address starts with <code>file:///</code>) cannot load R or Python, and the box says so. On the live site, the first run on a page downloads R or Python into your browser, which can take up to a minute for R; watch the status line next to the button.</p></details>
+        <details class="qa"><summary>R says “could not find function”, or “object not found”, in a browser box.</summary><p>Run the boxes on a page in order: later boxes use objects that earlier ones create, and pressing Run on a later box should run the earlier ones first. If you have edited an earlier box, run it again yourself so the later boxes see your change.</p></details>
+      </section>
+      <p class="ts-none" id="ts-none" hidden>Nothing here matches. Read the very last line of the traceback: it names the error type and the line number, and searching for the error type alone (for example <code>TypeError</code>) often finds the entry.</p>
+      <div class="box note">
+        <span class="box-kind">Note</span>
+        <p>When an error appears, read the very last line of the traceback first: it names the error type and the line number. Nine times out of ten it points you straight at one of the patterns above.</p>
+      </div>
+    </div>
+    <nav class="pager" aria-label="Page navigation">
+      <a class="prev" href="module-6.html"><span class="dir">Previous</span><span class="t">Module 6: Questionnaires and rating data</span></a>
+      <a class="next" href="where-next.html"><span class="dir">Next</span><span class="t">Where to go next</span></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <p>Coding Experiments in PsychoPy. Discipline of Psychology, Curtin University. Text licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</p>
+  </div>
+</footer>
+<script src="assets/site.js"></script>
+<script src="assets/ts.js"></script>
+</body>
+</html>

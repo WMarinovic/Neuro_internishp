@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Module 4: Capstone A: a serial reaction time task | Coding Experiments in PsychoPy</title>
+<meta name="description" content="Build a complete serial reaction time task in PsychoPy, then analyse its data in R.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 22'><rect width='32' height='22' rx='2' fill='%23808080'/><circle cx='16' cy='11' r='4' fill='white'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="index.html"><span class="wordmark-glyph" aria-hidden="true"></span>Coding Experiments in PsychoPy</a>
+    <nav class="topnav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="index.html#modules">Modules</a>
+      <a href="troubleshooting.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="module-banner">
+    <div class="module-head">
+      <div>
+        <p class="kicker">Module 4</p>
+        <h1>Capstone A: a serial reaction time task</h1>
+        <p class="lede">You put the pieces from Module 2 together into a complete serial reaction time experiment, then stack, clean and analyse its data in R.</p>
+        <p class="build-line"><b>You will finish with</b> a working task, its data, a learning curve and each participant’s sequence cost. <span class="lang py">Python</span> <span class="lang r">R</span></p>
+      </div>
+      <div class="banner-art" data-thumb="4"></div>
+    </div>
+  </div>
+
+  <div class="module-body">
+    <nav class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <p class="toc-part py">Building the task</p>
+      <ol>
+        <li><a href="#why">4.1 Why an SRTT?</a></li>
+        <li><a href="#design">4.2 The design</a></li>
+        <li><a href="#settings">4.3 Settings at the top</a></li>
+        <li><a href="#who">4.4 Participant and data file</a></li>
+        <li><a href="#window">4.5 Window, circles, keyboard</a></li>
+        <li><a href="#positions">4.6 One position list per block</a></li>
+        <li><a href="#trial">4.7 A single trial</a></li>
+        <li><a href="#record">4.8 Recording the trial</a></li>
+        <li><a href="#blocks">4.9 Blocks, breaks, clean exit</a></li>
+        <li><a href="#datafile">4.10 The data file</a></li>
+      </ol>
+      <p class="toc-part r">Reading it in R</p>
+      <ol>
+        <li><a href="#stack">4.11 Stack and clean</a></li>
+        <li><a href="#curve">4.12 The learning curve</a></li>
+        <li><a href="#cost">4.13 The sequence cost</a></li>
+        <li><a href="#scripts">4.14 The complete scripts</a></li>
+      </ol>
+      <ol>
+        <li><a href="#checks">Before you move on</a></li>
+      </ol>
+    </nav>
+
+    <article class="content">
+
+      <section class="part-py" aria-labelledby="part-4a">
+        <h2 class="part" id="part-4a">Building the task <span class="lang py">Python</span></h2>
+        <p>This module assumes you have worked through Module 2, which built each piece on its own: drawing several stimuli and keeping them on screen, waiting with an escape route, timing a response with the <code>Keyboard</code>, reading stimuli from a file, and saving one tidy row per trial with the <code>ExperimentHandler</code>. We now put all of it together into a complete, runnable experiment that collects data worth analysing, and then we analyse it in R.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>The complete script, <code>srtt.py</code>, and the analysis, <code>srtt_analysis.R</code>, are in <a href="#scripts">4.14</a>. Type the experiment in yourself once if you can; you will absorb far more than by running a finished file.</p>
+        </div>
+
+        <h3 id="why"><span class="secnum">4.1</span>Why a serial reaction time task?</h3>
+        <p>The serial reaction time task, or SRTT, is one of the oldest and cleanest ways to measure learning that the learner cannot necessarily report. On each trial a target appears in one of four positions and the participant presses a spatially compatible key. Most of the time the positions follow a fixed repeating sequence. Participants are not told this. Their responses nonetheless grow faster over blocks, and faster than can be explained by general practice alone.</p>
+        <p>We reveal the sequence-specific part of that learning with a simple trick. One block, the <em>probe</em>, abandons the sequence and presents random positions instead. If the speed-up were merely general practice, the probe would look like its neighbours. Instead, reaction times jump back up, and the size of that jump is our measure of how much the participant had learned about the sequence specifically.</p>
+
+        <h3 id="design"><span class="secnum">4.2</span>The design in one paragraph</h3>
+        <p>Four positions, four circles, four keys (<kbd>D</kbd> <kbd>F</kbd> <kbd>J</kbd> <kbd>K</kbd>) pressed with both hands: left middle and index fingers on D and F, right index and middle fingers on J and K. Seven blocks. Blocks one to five and seven follow a twelve-item sequence repeated eight times; block six is random. Reaction time and accuracy are recorded on every trial. The dependent measures are mean correct reaction time per block (the learning curve) and the <em>sequence cost</em>, the difference between the random probe and the sequence blocks that surround it.</p>
+
+        <div class="demo-block" id="srtt-play">
+          <p class="demo-title"><b>Do the task yourself first.</b> This is a browser version of the script you are about to build, with the same design and the same columns in its data file. Use fewer repeats for a quick run: with 2 repeats per block it takes about two minutes. Timing in a browser is approximate.</p>
+          <div class="demo-controls">
+            <label for="srtt-pid">Participant code</label><input type="text" id="srtt-pid" value="ME" maxlength="12">
+            <label for="srtt-reps">Repeats of the sequence per block</label>
+            <select id="srtt-reps"><option value="1">1 (about a minute)</option><option value="2" selected>2 (about two minutes)</option><option value="8">8 (the full task)</option></select>
+            <button type="button" class="btn primary" id="srtt-start">Start</button>
+          </div>
+          <div class="srtt-screen" id="srtt-screen" tabindex="0" aria-label="Serial reaction time task. Press D, F, J or K for the circle that fills white, or tap it.">
+            <span class="srtt-c" data-pos="1"></span><span class="srtt-c" data-pos="2"></span><span class="srtt-c" data-pos="3"></span><span class="srtt-c" data-pos="4"></span>
+            <div class="srtt-msg" id="srtt-msg">Press Start, then follow the instructions here.</div>
+          </div>
+          <p class="srtt-status" id="srtt-status" aria-live="polite"></p>
+          <div id="srtt-results"></div>
+        </div>
+
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>Designing with the analysis in mind: because we will want one learning curve per person and a single cost value per person, every trial must carry its participant, block and block_type labels. We add those columns as we write each trial, so the R side is a short hop.</p>
+        </div>
+
+        <h3 id="settings"><span class="secnum">4.3</span>Settings at the top</h3>
+        <p>We will read the script in the sections marked by its comments. Open a new file in the Coder, save it as <code>srtt.py</code>, and build it up as we go.</p>
+        <p>Every number you might reasonably want to change lives at the top, named in capitals. This is a habit worth forming: a reader can grasp and adjust the design without reading the logic, and you avoid magic numbers scattered through the code.</p>
+        <p>The imports come first. The capstone uses six modules: the <code>visual</code>, <code>core</code>, <code>data</code> and <code>gui</code> parts of PsychoPy, the <code>Keyboard</code> from its hardware layer, and two from the Python standard library (<code>os</code> for building the data path, <code>random</code> for the random block). Put them at the very top of <code>srtt.py</code>:</p>
+<pre class="code" data-lang="Python" data-file="srtt.py"><code class="language-python">import os
+import random
+from psychopy import visual, core, data, gui
+from psychopy.hardware import keyboard
+
+SEQUENCE       = [2, 3, 1, 4, 3, 2, 4, 1, 3, 4, 2, 1]  # positions 1-4
+N_BLOCKS       = 7            # total number of blocks
+RANDOM_BLOCK   = 6            # this block is random; the rest follow SEQUENCE
+REPS_PER_BLOCK = 8            # repeats of the 12-item pattern per block
+RESP_KEYS      = ['d', 'f', 'j', 'k']    # keys for positions 1, 2, 3, 4
+RSI            = 0.25         # response-to-stimulus interval, seconds
+MAX_RT         = 2.0          # response deadline, seconds
+POSITIONS_X    = [-0.3, -0.1, 0.1, 0.3]  # x of the four locations (height units)</code></pre>
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Before reading on, predict how many trials the whole task runs.</p>
+          <details class="reveal"><summary>Show the answer</summary>
+            <p><code>len(SEQUENCE) * REPS_PER_BLOCK * N_BLOCKS</code>, which is 12 × 8 × 7 = 672 trials. For a real study you would raise <code>REPS_PER_BLOCK</code>; for a first test, drop it to 2 so a run takes a couple of minutes (168 trials).</p>
+          </details>
+        </div>
+
+        <h3 id="who"><span class="secnum">4.4</span>Who is sitting down, and where the data go</h3>
+        <p>A small dialog collects the participant code and session. <code>data.getDateStr()</code> stamps the moment, which keeps filenames unique so you never overwrite a participant. The <code>ExperimentHandler</code> works exactly as in Module 2: you hand it the participant details once, then call <code>addData</code> and <code>nextEntry</code> on every trial, and it writes a tidy CSV when the experiment closes.</p>
+<pre class="code" data-lang="Python" data-file="srtt.py"><code class="language-python">info = {'participant': '', 'session': '001'}
+dlg = gui.DlgFromDict(info, title='Serial Reaction Time Task')
+if not dlg.OK:
+    core.quit()
+
+info['date'] = data.getDateStr()
+os.makedirs('data', exist_ok=True)
+filename = os.path.join('data', f"{info['participant']}_SRTT_{info['date']}")
+
+thisExp = data.ExperimentHandler(
+    name='SRTT',
+    extraInfo=info,          # participant, session and date become columns
+    dataFileName=filename
+)</code></pre>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>Everything in <code>extraInfo</code> is copied onto every row of the data file automatically. That is exactly why <code>participant</code> appears beside each trial in R without your having to add it by hand inside the loop.</p>
+        </div>
+
+        <h3 id="window"><span class="secnum">4.5</span>The window, the four circles, and the keyboard</h3>
+        <p>We draw four grey circles that stay on screen from start to finish. Nothing flickers and there is no fixation cross to flash up between trials: the display is calm, and the only thing that changes is which circle is filled. To mark a target we set one circle’s <code>fillColor</code> to white, and clear it again afterwards. The <code>Keyboard</code> object timestamps presses against a hardware clock, giving reaction times you can trust.</p>
+<pre class="code" data-lang="Python" data-file="srtt.py"><code class="language-python">win = visual.Window(size=[1280, 720], fullscr=False, color='black', units='height')
+kb = keyboard.Keyboard()
+
+# four circles, always on screen; the target is the one that fills white
+circles = [
+    visual.Circle(win, radius=0.05, edges=64, lineColor='grey',
+                  fillColor=None, lineWidth=3, pos=(x, 0))
+    for x in POSITIONS_X
+]
+
+def draw_circles():
+    for ci in circles:
+        ci.draw()</code></pre>
+        <p>Three more small helpers are defined here too, once, so the rest of the script can call them anywhere. <code>quit_cleanly</code> closes the data file, the window and the program in that order, so an early exit still saves. <code>show_message</code> puts a line of text on screen and waits for space. <code>wait_with_quit</code>, met in Module 2, waits while still honouring the Escape key.</p>
+<pre class="code" data-lang="Python" data-file="srtt.py"><code class="language-python">def quit_cleanly():
+    thisExp.close()          # write whatever has been collected
+    win.close()
+    core.quit()
+
+def show_message(text):
+    msg = visual.TextStim(win, text=text, color="white",
+                          height=0.045, wrapWidth=0.9)
+    msg.draw()
+    win.flip()
+    keys = kb.getKeys(keyList=["space", "escape"], waitRelease=False)
+    while not keys:
+        keys = kb.getKeys(keyList=["space", "escape"], waitRelease=False)
+    if keys[0].name == "escape":
+        quit_cleanly()
+
+def wait_with_quit(duration):
+    timer = core.Clock()
+    while timer.getTime() &lt; duration:
+        if kb.getKeys(keyList=["escape"], waitRelease=False):
+            quit_cleanly()</code></pre>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>Set <code>fullscr=True</code> for real data collection. A windowed display is only for development, when you want to be able to click away to your editor.</p>
+        </div>
+
+        <h3 id="positions"><span class="secnum">4.6</span>One position list per block</h3>
+        <p>Sequence blocks are simply the twelve-item pattern repeated. Random blocks are built position by position, refusing any immediate repeat so that the random condition matches the sequence in never asking for the same key twice in a row. Without that constraint the random block would be artificially easy on repeats and the comparison would be unfair.</p>
+<pre class="code" data-lang="Python" data-file="srtt.py"><code class="language-python">def make_block_positions(is_random):
+    n = len(SEQUENCE) * REPS_PER_BLOCK
+    if not is_random:
+        return SEQUENCE * REPS_PER_BLOCK
+    seq = []
+    prev = None
+    for _ in range(n):
+        choice = random.choice([1, 2, 3, 4])
+        while choice == prev:        # no immediate repeats
+            choice = random.choice([1, 2, 3, 4])
+        seq.append(choice)
+        prev = choice
+    return seq</code></pre>
+
+        <h3 id="trial"><span class="secnum">4.7</span>A single trial, timed properly</h3>
+        <p>This is the heart of the experiment, and it runs inside the trial loop that 4.9 wraps around it. That loop hands each trial three things the code below uses: <code>pos</code>, the target position 1 to 4 for this trial; <code>correct_key</code>, the key that matches it, taken as <code>RESP_KEYS[pos - 1]</code>; and <code>trial_overall</code>, a running count across the session. With the four circles already on screen, we fill the target circle white. The instant that fill is on screen we reset the keyboard clock, so the reaction time is measured from the moment the target could first be seen, not from some earlier point. We then poll for a key until either one arrives or the deadline passes, and clear the fill again. Because the circles are never undrawn, the display stays rock steady.</p>
+<pre class="code" data-lang="Python" data-file="srtt.py"><code class="language-python">circles[pos - 1].fillColor = 'white'
+draw_circles()
+kb.clearEvents()
+win.flip()
+kb.clock.reset()          # time from the moment the target fills
+
+response_key = None
+rt = None
+while kb.clock.getTime() &lt; MAX_RT:
+    keys = kb.getKeys(keyList=RESP_KEYS + ['escape'], waitRelease=False)
+    if keys:
+        press = keys[0]
+        if press.name == 'escape':
+            quit_cleanly()
+        response_key = press.name
+        rt = press.rt
+        break
+
+correct = int(response_key == correct_key)
+circles[pos - 1].fillColor = None      # clear the target again</code></pre>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>The order matters: <code>clearEvents()</code> before the flip discards any stray presses from the gap between trials, and <code>kb.clock.reset()</code> comes immediately after the flip so timing starts when the target fills. Reset before the flip and every reaction time is inflated by up to a frame, as the <a href="module-2.html#demo-clock">clock demo in Module 2</a> shows.</p>
+        </div>
+        <p>Between trials the circles stay on screen as plain outlines during the response-to-stimulus interval, so there is no blank screen and no flicker:</p>
+<pre class="code" data-lang="Python" data-file="srtt.py"><code class="language-python"># response-to-stimulus interval: the circles stay visible as outlines
+draw_circles()
+win.flip()
+core.wait(RSI)</code></pre>
+        <p>A miss leaves <code>response_key</code> and <code>rt</code> as <code>None</code>. Those empty cells become <code>NA</code> in R, which is precisely what R wants for a missing value, so we do nothing special to handle them here.</p>
+
+        <h3 id="record"><span class="secnum">4.8</span>Recording the trial</h3>
+        <p>Each <code>addData</code> call adds one named value to the current row; <code>nextEntry</code> closes the row and starts the next. Name the columns the way you want to type them in R: short, lower-case, no spaces.</p>
+<pre class="code" data-lang="Python" data-file="srtt.py"><code class="language-python">thisExp.addData('block', block)
+thisExp.addData('block_type', 'random' if is_random else 'sequence')
+thisExp.addData('trial_in_block', trial_in_block)
+thisExp.addData('trial_overall', trial_overall)
+thisExp.addData('position', pos)
+thisExp.addData('correct_key', correct_key)
+thisExp.addData('response_key', response_key)
+thisExp.addData('correct', correct)
+thisExp.addData('rt', rt)
+thisExp.addData('rsi', RSI)
+thisExp.nextEntry()</code></pre>
+
+        <h3 id="blocks"><span class="secnum">4.9</span>Blocks, breaks, and a clean exit</h3>
+        <p>The block loop wraps the trial loop, offering a rest between blocks and stopping cleanly at the end. <code>quit_cleanly()</code> always closes the <code>ExperimentHandler</code> first, so that even an early exit on the Escape key still writes whatever data has been collected. Never let a script simply run off the end with the data unsaved.</p>
+<pre class="code" data-lang="Python" data-file="srtt.py"><code class="language-python">trial_overall = 0   # running count across the whole session
+
+for block in range(1, N_BLOCKS + 1):
+    is_random = (block == RANDOM_BLOCK)
+    positions = make_block_positions(is_random)
+
+    draw_circles()            # settle the display before the block
+    win.flip()
+    core.wait(0.5)
+
+    for trial_in_block, pos in enumerate(positions, start=1):
+        trial_overall += 1
+        correct_key = RESP_KEYS[pos - 1]   # the key matching this position
+        # --- run the single trial from 4.7 here ---
+        # (fills the target, times the response, sets response_key/rt/correct)
+        # --- then record it, as in 4.8 ---
+        # thisExp.addData(...) for each column, then thisExp.nextEntry()
+
+    if block &lt; N_BLOCKS:
+        show_message(f"End of block {block} of {N_BLOCKS}. "
+                     "Take a short break. Press SPACE to continue.")
+
+show_message("That is the end of the task. Thank you!")
+quit_cleanly()</code></pre>
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Run it with <code>REPS_PER_BLOCK = 2</code> and play the part of a fast learner: deliberately speed up on the sequence blocks. Open the CSV afterwards and confirm a row exists for every trial, with sensible reaction times and a <code>block_type</code> column that switches to <code>random</code> on block six.</p>
+        </div>
+
+        <h3 id="datafile"><span class="secnum">4.10</span>The data file</h3>
+        <p>When the experiment closes, the <code>ExperimentHandler</code> writes a wide-format CSV to the <code>data</code> folder with one row per trial. The columns you will use are below; the identifier columns come from <code>extraInfo</code>, the rest from the <code>addData</code> calls.</p>
+        <div class="coltable"><table>
+          <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>participant</code></td><td>Participant code typed into the dialog</td></tr>
+            <tr><td><code>session</code></td><td>Session label, useful for test-retest designs</td></tr>
+            <tr><td><code>date</code></td><td>Timestamp the session began</td></tr>
+            <tr><td><code>block</code></td><td>Block number, 1 to 7</td></tr>
+            <tr><td><code>block_type</code></td><td>“sequence” or “random” (block 6)</td></tr>
+            <tr><td><code>trial_in_block</code></td><td>Position of the trial within its block</td></tr>
+            <tr><td><code>trial_overall</code></td><td>Running trial count across the whole session</td></tr>
+            <tr><td><code>position</code></td><td>Target location, 1 (far left) to 4 (far right)</td></tr>
+            <tr><td><code>correct_key</code></td><td>The key that was correct on this trial</td></tr>
+            <tr><td><code>response_key</code></td><td>The key actually pressed (empty if no response)</td></tr>
+            <tr><td><code>correct</code></td><td>1 if the right key was pressed, otherwise 0</td></tr>
+            <tr><td><code>rt</code></td><td>Reaction time in seconds (empty if no response)</td></tr>
+            <tr><td><code>rsi</code></td><td>The response-to-stimulus interval used</td></tr>
+          </tbody>
+        </table></div>
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>Because the file is wide, tidy and one-row-per-trial, <code>readr::read_csv()</code> reads it with no fuss, and the empty <code>rt</code> cells from missed trials arrive as <code>NA</code> rather than zeros, so they will not quietly drag your means down.</p>
+        </div>
+      </section>
+
+      <section class="part-r" aria-labelledby="part-4b">
+        <h2 class="part" id="part-4b">Reading it in R <span class="lang r">R</span></h2>
+        <p>The analysis stacks every participant’s file, cleans the trials we should not average over, draws the learning curve, and quantifies the sequence cost. It is deliberately short, and uses only the tidyverse.</p>
+        <p>You can run every step here, in your browser. Its <code>data</code> folder holds twelve simulated participants, made with exactly the columns <code>srtt.py</code> writes; if you did the task above and pressed “Add my session to the R data”, your own file is there too. Run the cells in order. In RStudio, start the script with <code>library(tidyverse)</code> instead of the five separate packages.</p>
+
+        <h3 id="stack"><span class="secnum">4.11</span>Stack and clean</h3>
+        <div class="rcell" id="rc-stack" data-packages="readr,dplyr,purrr,tidyr,ggplot2" data-files="assets/data/srtt/index.json">
+          <div class="editor-tab"><span class="file">srtt_analysis.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="19" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">library(readr)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(ggplot2)
+
+files &lt;- list.files("data", pattern = "_SRTT_.*\\.csv$", full.names = TRUE)
+
+dat &lt;- files |>
+  set_names() |>
+  map(read_csv, show_col_types = FALSE) |>
+  list_rbind(names_to = "file")
+
+clean &lt;- dat |>
+  filter(correct == 1, !is.na(rt), rt > 0.10, rt &lt; 2.0)
+
+# a quick check, not part of the script: how many trials before and after?
+c(all = nrow(dat), kept = nrow(clean))</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <p>We average reaction times over correct trials only, and we drop implausibly fast or slow responses. Keeping error trials in a reaction-time mean is one of the commonest ways to blur a real effect.</p>
+
+        <div class="demo-block" id="demo-stack">
+          <p class="demo-title"><b>Try it: what each line does.</b> Three participants, four trials each, so the tables stay short.</p>
+          <div class="demo-controls">
+            <button type="button" class="btn" id="stack-prev">Previous step</button>
+            <button type="button" class="btn primary" id="stack-next">Next step</button>
+            <div class="stepper" id="stack-steps" aria-label="Steps"></div>
+          </div>
+          <pre class="listing" id="stack-code" aria-label="The script, with the current step highlighted"></pre>
+          <div style="margin-top:1rem" id="stack-out" aria-live="polite"></div>
+          <div class="explain" id="stack-explain"></div>
+        </div>
+
+        <h3 id="curve"><span class="secnum">4.12</span>The learning curve</h3>
+        <div class="rcell" id="rc-curve" data-packages="readr,dplyr,purrr,tidyr,ggplot2" data-needs="rc-stack">
+          <div class="editor-tab"><span class="file">srtt_analysis.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="12" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">by_block &lt;- clean |>
+  group_by(participant, block, block_type) |>
+  summarise(mean_rt = mean(rt), n = n(), .groups = "drop")
+
+ggplot(by_block, aes(block, mean_rt)) +
+  geom_line(aes(group = participant), alpha = 0.30) +
+  stat_summary(aes(group = 1), fun = mean, geom = "line", linewidth = 1.2) +
+  geom_point(data = filter(by_block, block_type == "random"),
+             colour = "red", size = 2) +
+  labs(x = "Block", y = "Mean correct RT (s)",
+       title = "Serial RT: learning across blocks")</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <p>You should see reaction times fall across the sequence blocks and a red point sitting clearly above the trend at the random probe. That visible bump is sequence-specific learning.</p>
+
+        <h3 id="cost"><span class="secnum">4.13</span>The sequence cost</h3>
+        <p>Finally we put a number on the bump: the random probe minus the mean of its two neighbouring sequence blocks, computed per participant. A positive value means the sequence was helping.</p>
+        <div class="rcell" id="rc-cost" data-packages="readr,dplyr,purrr,tidyr,ggplot2" data-needs="rc-curve">
+          <div class="editor-tab"><span class="file">srtt_analysis.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="13" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">probe      &lt;- unique(dat$block[dat$block_type == "random"])
+neighbours &lt;- c(probe - 1, probe + 1)
+
+cost &lt;- by_block |>
+  filter(block %in% c(probe, neighbours)) |>
+  mutate(kind = if_else(block == probe, "random", "sequence")) |>
+  group_by(participant, kind) |>
+  summarise(mean_rt = mean(mean_rt), .groups = "drop") |>
+  pivot_wider(names_from = kind, values_from = mean_rt) |>
+  mutate(sequence_cost = random - sequence)
+
+cost</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <div class="demo-block" id="demo-srt">
+          <p class="demo-title"><b>Try it: what moves the bump?</b> Eight simulated participants, seven blocks, block 6 random. Change how much of the sequence was learnt and how much people differ, and watch the red points and the costs.</p>
+          <div class="demo-controls">
+            <label for="srt-learn">Sequence learning</label>
+            <input type="range" id="srt-learn" min="0" max="120" step="5" value="60">
+            <output id="srt-learn-out" for="srt-learn"></output>
+            <label for="srt-spread">Differences between people</label>
+            <input type="range" id="srt-spread" min="0" max="60" step="5" value="20">
+            <output id="srt-spread-out" for="srt-spread"></output>
+          </div>
+          <div class="demo-split">
+            <div><div id="srt-plot"></div><div id="srt-cost" style="margin-top:0.75rem"></div></div>
+            <div><div id="srt-table"></div><div class="explain" id="srt-explain"></div></div>
+          </div>
+        </div>
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>With a sample of participants, <code>t.test(cost$sequence_cost)</code> asks whether the cost is reliably above zero. With real data you would go trial-level and fit a mixed model, for example <code>lmer(rt ~ block_type + (1 + block_type | participant))</code>, which respects the nesting and uses every trial rather than block means.</p>
+        </div>
+        <div class="rcell" id="rc-ttest" data-packages="readr,dplyr,purrr,tidyr,ggplot2" data-needs="rc-cost">
+          <div class="editor-tab"><span class="file">Console, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="2" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">t.test(cost$sequence_cost)</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <p>Capstone B, the recognition memory task, follows the same shape: a study phase, a test phase with old and new items, a tidy data file, and an R script that computes hit and false-alarm rates and signal-detection measures.</p>
+
+        <h3 id="scripts"><span class="secnum">4.14</span>The complete scripts</h3>
+        <p>Use these to check your own version once you have built it, or to run the task with real participants.</p>
+        <ul class="downloads">
+          <li><a class="py" href="assets/downloads/srtt.py" download><code>srtt.py</code><span>The complete task, for the PsychoPy Coder</span></a></li>
+          <li><a class="r" href="assets/downloads/srtt_analysis.R" download><code>srtt_analysis.R</code><span>The complete analysis, for RStudio</span></a></li>
+          <li><a class="d" href="assets/downloads/srtt-example-data.zip" download><code>srtt-example-data.zip</code><span>The twelve simulated participants, in a <code>data</code> folder</span></a></li>
+        </ul>
+        <p>To run the analysis on the example data, unzip it next to <code>srtt_analysis.R</code> so that the <code>data</code> folder sits beside the script, then set the working directory to that folder (Session &gt; Set Working Directory &gt; To Source File Location).</p>
+      </section>
+
+
+      <section aria-labelledby="checks">
+        <h2 class="part" id="checks">Before you move on</h2>
+        <p>Tick each check as you complete it. Your ticks are kept in this browser only.</p>
+        <ul class="checklist" data-key="module-4" data-status="check-status-4">
+          <li><input type="checkbox" id="c4-0"><label for="c4-0">Your <code>srtt.py</code> runs from start to finish with <code>REPS_PER_BLOCK = 2</code>.<span class="hint">Sections 4.3 to 4.9</span></label></li>
+          <li><input type="checkbox" id="c4-1"><label for="c4-1">Pressing Escape part-way through still leaves a CSV in <code>data/</code>.<span class="hint">Section 4.9</span></label></li>
+          <li><input type="checkbox" id="c4-2"><label for="c4-2">Your CSV has one row per trial and the columns in 4.10, with block 6 marked random.<span class="hint">Section 4.10</span></label></li>
+          <li><input type="checkbox" id="c4-3"><label for="c4-3"><code>srtt_analysis.R</code> draws the learning curve and prints a cost per participant.<span class="hint">Sections 4.11 to 4.13</span></label></li>
+          <li><input type="checkbox" id="c4-4"><label for="c4-4">You can explain why the cost compares block 6 with blocks 5 and 7, not with block 1.<span class="hint">Section 4.13</span></label></li>
+        </ul>
+        <p class="check-status" id="check-status-4" aria-live="polite"></p>
+
+        <nav class="pager" aria-label="Module navigation">
+          <a class="prev" href="module-3.html"><span class="dir">Previous</span><span class="t">Module 3: Your first R script</span></a>
+          <a class="next" href="module-5.html"><span class="dir">Next</span><span class="t">Module 5: Capstone B, a recognition memory task</span></a>
+        </nav>
+      </section>
+    </article>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <p>Coding Experiments in PsychoPy. Discipline of Psychology, Curtin University. Text licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js" data-manual></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-r.min.js"></script>
+<script src="assets/thumbs.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/demos.js"></script>
+<script src="assets/srtt-task.js"></script>
+<script type="module" src="assets/rcell.js"></script>
+</body>
+</html>

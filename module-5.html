@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Module 5: Capstone B: a recognition memory task | Coding Experiments in PsychoPy</title>
+<meta name="description" content="Build a two-phase recognition memory task in PsychoPy and score it with signal detection theory in R.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 22'><rect width='32' height='22' rx='2' fill='%23808080'/><circle cx='16' cy='11' r='4' fill='white'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="index.html"><span class="wordmark-glyph" aria-hidden="true"></span>Coding Experiments in PsychoPy</a>
+    <nav class="topnav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="index.html#modules">Modules</a>
+      <a href="troubleshooting.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="module-banner">
+    <div class="module-head">
+      <div>
+        <p class="kicker">Module 5</p>
+        <h1>Capstone B: a recognition memory task</h1>
+        <p class="lede">You build a study-then-test recognition memory experiment, then use signal detection theory in R to separate how well people remember from how willing they are to say “old”.</p>
+        <p class="build-line"><b>You will finish with</b> a working task, its data, and d′ and criterion for every participant. <span class="lang py">Python</span> <span class="lang r">R</span></p>
+      </div>
+      <div class="banner-art" data-thumb="5"></div>
+    </div>
+  </div>
+
+  <div class="module-body">
+    <nav class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <p class="toc-part py">Building the task</p>
+      <ol>
+        <li><a href="#why">5.1 Why recognition memory?</a></li>
+        <li><a href="#settings">5.2 Settings</a></li>
+        <li><a href="#split">5.3 Splitting the pool</a></li>
+        <li><a href="#study">5.4 The study phase</a></li>
+        <li><a href="#test">5.5 The test phase</a></li>
+        <li><a href="#record">5.6 Recording the trial</a></li>
+        <li><a href="#datafile">5.7 The data file</a></li>
+      </ol>
+      <p class="toc-part r">Scoring it in R</p>
+      <ol>
+        <li><a href="#counts">5.8 Counting hits and false alarms</a></li>
+        <li><a href="#sdt">5.9 Rates, d′ and criterion</a></li>
+        <li><a href="#plot">5.10 Seeing it</a></li>
+        <li><a href="#scripts">5.11 The complete scripts</a></li>
+      </ol>
+      <ol>
+        <li><a href="#checks">Before you move on</a></li>
+      </ol>
+    </nav>
+
+    <article class="content">
+
+      <section class="part-py" aria-labelledby="part-5a">
+        <h2 class="part" id="part-5a">Building the task <span class="lang py">Python</span></h2>
+        <p>Where the serial reaction time task measured learning through speed, this capstone measures memory through accuracy, and it introduces the analysis framework that underpins a huge amount of memory and perception research: signal detection theory. The build reuses everything you now know (a participant dialog, an <code>ExperimentHandler</code>, the <code>Keyboard</code>, an item loop from a file) and adds a two-phase structure: study, then test.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>The complete experiment, <code>recog_memory.py</code>, the analysis, <code>recog_analysis.R</code>, and a starter word pool, <code>memory_words.csv</code>, are in <a href="#scripts">5.11</a>. Edit the word file freely; the code adapts to whatever pool you give it.</p>
+        </div>
+
+        <h3 id="why"><span class="secnum">5.1</span>Why a recognition memory task?</h3>
+        <p>In a recognition test we show studied words (targets, or “old”) mixed with unstudied words (lures, or “new”), and the participant judges each one. That simple yes/no decision hides two very different things: how well the person can tell old from new, and how willing they are to say “old” in the first place. A cautious participant and a forgetful one can produce the same number of correct answers for opposite reasons. Signal detection theory pulls these apart.</p>
+        <p>Every test trial falls into one of four boxes. Saying “old” to an old word is a <em>hit</em>; saying “old” to a new word is a <em>false alarm</em>; the other two are misses and correct rejections. From the hit rate and the false-alarm rate we compute two numbers: d-prime, how far apart the memory signals for old and new items are, which is sensitivity; and the criterion, how much evidence the person demands before saying “old”, which is bias.</p>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>The logic is worth holding onto: raise your hits by saying “old” more often and your false alarms rise too, so a generous strategy inflates both. d-prime rewards only the separation between the two rates, which is why it tracks memory rather than willingness to guess.</p>
+        </div>
+
+        <div class="demo-block" id="recog-play">
+          <p class="demo-title"><b>Do the task yourself first.</b> This is a browser version of the script you are about to build: a study list, then a test of old and new words, with no feedback. The quick version uses 8 studied words and 8 new ones; the full version uses 20 of each, as in the script.</p>
+          <div class="demo-controls">
+            <label for="recog-pid">Participant code</label><input type="text" id="recog-pid" value="ME" maxlength="12">
+            <label for="recog-size">Words</label>
+            <select id="recog-size"><option value="8" selected>8 old + 8 new (about a minute)</option><option value="20">20 old + 20 new (the full task)</option></select>
+            <button type="button" class="btn primary" id="recog-start">Start</button>
+          </div>
+          <div class="srtt-screen" id="recog-screen" tabindex="0" aria-label="Recognition memory task. Press O for a word you studied and N for a new word.">
+            <div class="recog-word" id="recog-word" aria-live="polite"></div>
+            <div class="recog-prompt" id="recog-prompt" hidden>O = old &nbsp;&nbsp;&nbsp; N = new</div>
+            <div class="srtt-msg" id="recog-msg">Press Start, then follow the instructions here.</div>
+          </div>
+          <div class="recog-answers" hidden>
+            <button type="button" class="btn" data-resp="old">Old (O)</button>
+            <button type="button" class="btn" data-resp="new">New (N)</button>
+          </div>
+          <p class="srtt-status" id="recog-status" aria-live="polite"></p>
+          <div id="recog-results"></div>
+        </div>
+
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>Design with the analysis in mind: we save one row per test trial carrying its status (old or new) and the participant’s response. Hits and false alarms, and therefore d-prime, are then a short summary away.</p>
+        </div>
+
+        <h3 id="settings"><span class="secnum">5.2</span>Settings</h3>
+        <p>Open a new file, save it as <code>recog_memory.py</code>, and build it in sections. The dialog, the <code>ExperimentHandler</code> and the <code>Keyboard</code> are just as in Capstone A, so we concentrate on what is new: splitting a word pool into old and new, and running two phases.</p>
+        <p>As always, the things you might change sit at the top. The two response keys are named here, so the rest of the code never hard-codes a letter.</p>
+<pre class="code" data-lang="Python" data-file="recog_memory.py"><code class="language-python">STIM_FILE  = 'memory_words.csv'
+N_STUDY    = 20          # number of studied (old) words
+N_LURES    = 20          # number of unstudied (new) words at test
+STUDY_DUR  = 1.5         # seconds each word is shown during study
+STUDY_ISI  = 0.6         # blank gap between study words
+ITI        = 0.5         # blank gap between test trials
+KEY_OLD    = 'o'         # "I saw this word"
+KEY_NEW    = 'n'         # "this word is new"</code></pre>
+
+        <h3 id="split"><span class="secnum">5.3</span>Splitting the pool into old and new</h3>
+        <p>We read the word pool, shuffle it, and slice it: the first <code>N_STUDY</code> words become targets that will be studied, the next <code>N_LURES</code> become lures that appear only at test. Shuffling first means a different random split for every participant, so no particular word is always old. The test list tags each word with its true status and is itself shuffled, so old and new are interleaved unpredictably.</p>
+<pre class="code" data-lang="Python" data-file="recog_memory.py"><code class="language-python">pool = [row['word'] for row in data.importConditions(STIM_FILE)]
+random.shuffle(pool)
+targets = pool[:N_STUDY]                       # studied (old)
+lures = pool[N_STUDY:N_STUDY + N_LURES]        # test-only (new)
+
+study_list = targets[:]
+random.shuffle(study_list)
+
+test_list = ([{'word': w, 'status': 'old'} for w in targets] +
+             [{'word': w, 'status': 'new'} for w in lures])
+random.shuffle(test_list)</code></pre>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>Slice the lures from a part of the pool the targets did not come from. If targets and lures overlapped, a “new” word might actually have been studied, and the false-alarm rate would be meaningless. Taking <code>pool[:N_STUDY]</code> and <code>pool[N_STUDY:N_STUDY + N_LURES]</code> guarantees they are disjoint.</p>
+        </div>
+
+        <h3 id="study"><span class="secnum">5.4</span>The study phase</h3>
+        <p>Studying is just viewing: each word appears for <code>STUDY_DUR</code> seconds, then a blank gap. There is no response to collect, but we still want Escape to work, so the waits go through the <code>wait_with_quit</code> helper from Module 2, which polls the keyboard while it waits.</p>
+<pre class="code" data-lang="Python" data-file="recog_memory.py"><code class="language-python">for word in study_list:
+    word_stim.text = word
+    word_stim.draw()
+    win.flip()
+    wait_with_quit(STUDY_DUR)
+    win.flip()                 # blank
+    wait_with_quit(STUDY_ISI)</code></pre>
+
+        <h3 id="test"><span class="secnum">5.5</span>The test phase, one trial</h3>
+        <p>Each test word appears with a reminder of the keys. We reset the keyboard clock at the flip so the decision time is measured from word onset, then wait for <kbd>O</kbd> or <kbd>N</kbd>. The trial is correct when the response matches the word’s true status. In the complete script this trial sits inside a loop over <code>test_list</code>, with a blank gap of <code>ITI</code> seconds after each one.</p>
+<pre class="code" data-lang="Python" data-file="recog_memory.py"><code class="language-python">word_stim.text = entry['word']
+word_stim.draw()
+prompt.draw()
+kb.clearEvents()
+win.flip()
+kb.clock.reset()               # time the decision from word onset
+
+response = None
+rt = None
+while response is None:
+    keys = kb.getKeys(keyList=[KEY_OLD, KEY_NEW, 'escape'], waitRelease=False)
+    if keys:
+        press = keys[0]
+        if press.name == 'escape':
+            quit_cleanly()
+        response = 'old' if press.name == KEY_OLD else 'new'
+        rt = press.rt
+
+correct = int(response == entry['status'])</code></pre>
+        <div class="box note">
+          <span class="box-kind">Note</span>
+          <p>Notice there is no feedback at test. In a recognition experiment you do not tell the participant whether they were right, because that would teach them the items and contaminate later trials.</p>
+        </div>
+
+        <h3 id="record"><span class="secnum">5.6</span>Recording the trial</h3>
+        <p>The crucial pair of columns is <code>status</code> and <code>response</code>: the truth and the judgement. Everything in the analysis is built from comparing those two.</p>
+<pre class="code" data-lang="Python" data-file="recog_memory.py"><code class="language-python">thisExp.addData('trial', trial)
+thisExp.addData('word', entry['word'])
+thisExp.addData('status', entry['status'])      # old (target) or new (lure)
+thisExp.addData('response', response)           # old or new
+thisExp.addData('correct', correct)
+thisExp.addData('rt', rt)
+thisExp.nextEntry()</code></pre>
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>Run it with a small pool first: set <code>N_STUDY</code> and <code>N_LURES</code> to 4 and trim the word file. Then deliberately answer “old” to everything, and check in the data that your hits are perfect but your false alarms are too, the signature of pure bias rather than memory. You can try the same in the browser version in 5.1.</p>
+        </div>
+
+        <h3 id="datafile"><span class="secnum">5.7</span>The data file</h3>
+        <p>The <code>ExperimentHandler</code> writes one row per test trial to the <code>data</code> folder. The study phase is not saved, because the studied words are exactly the rows whose status is old.</p>
+        <div class="coltable"><table>
+          <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>participant</code></td><td>Participant code from the dialog</td></tr>
+            <tr><td><code>session</code></td><td>Session label</td></tr>
+            <tr><td><code>date</code></td><td>Timestamp the session began</td></tr>
+            <tr><td><code>trial</code></td><td>Test-trial number, in presentation order</td></tr>
+            <tr><td><code>word</code></td><td>The word shown on this test trial</td></tr>
+            <tr><td><code>status</code></td><td>“old” (a studied target) or “new” (an unstudied lure)</td></tr>
+            <tr><td><code>response</code></td><td>“old” or “new”, the participant’s judgement</td></tr>
+            <tr><td><code>correct</code></td><td>1 if response matched status, otherwise 0</td></tr>
+            <tr><td><code>rt</code></td><td>Decision time in seconds, from word onset</td></tr>
+          </tbody>
+        </table></div>
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>With <code>status</code> and <code>response</code> on every row, a single <code>group_by(participant)</code> gives the four counts that signal detection theory needs.</p>
+        </div>
+      </section>
+
+      <section class="part-r" aria-labelledby="part-5b">
+        <h2 class="part" id="part-5b">Scoring it in R <span class="lang r">R</span></h2>
+        <p>The analysis counts hits and false alarms per participant, turns them into rates, and computes the two signal-detection measures. It stays in the tidyverse and base R’s normal-distribution functions.</p>
+        <p>As in Module 4, every step runs here in your browser. Its <code>data</code> folder holds twelve simulated participants with exactly the columns <code>recog_memory.py</code> writes, plus your own session if you added it in 5.1. Run the cells in order. In RStudio, start the script with <code>library(tidyverse)</code> instead of the separate packages.</p>
+
+        <h3 id="counts"><span class="secnum">5.8</span>Counting hits and false alarms</h3>
+        <div class="rcell" id="rc-counts" data-packages="readr,dplyr,purrr,ggplot2" data-files="assets/data/recog/index.json">
+          <div class="editor-tab"><span class="file">recog_analysis.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="25" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">library(readr)
+library(dplyr)
+library(purrr)
+library(ggplot2)
+
+files &lt;- list.files("data", pattern = "_RECOG_.*\\.csv$", full.names = TRUE)
+dat &lt;- files |>
+  set_names() |>
+  map(read_csv, show_col_types = FALSE) |>
+  list_rbind(names_to = "file")
+
+counts &lt;- dat |>
+  filter(!is.na(response)) |>
+  mutate(said_old = response == "old") |>
+  group_by(participant) |>
+  summarise(
+    n_old = sum(status == "old"),
+    n_new = sum(status == "new"),
+    hits  = sum(status == "old" &amp; said_old),
+    fa    = sum(status == "new" &amp; said_old),
+    .groups = "drop"
+  )
+
+counts</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+
+        <h3 id="sdt"><span class="secnum">5.9</span>Rates, d-prime and criterion</h3>
+        <p>Hit and false-alarm rates are just proportions, but a rate of 0 or 1 makes d-prime infinite. The standard loglinear correction adds half a trial to each count and one trial to each total, which nudges extreme rates away from the edges. <code>qnorm</code> turns a rate into a z-score, and the two signal-detection measures follow directly.</p>
+        <div class="rcell" id="rc-sdt" data-packages="readr,dplyr,purrr,ggplot2" data-needs="rc-counts">
+          <div class="editor-tab"><span class="file">recog_analysis.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="11" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">sdt &lt;- counts |>
+  mutate(
+    hit_rate  = (hits + 0.5) / (n_old + 1),
+    fa_rate   = (fa   + 0.5) / (n_new + 1),
+    d_prime   = qnorm(hit_rate) - qnorm(fa_rate),
+    criterion = -0.5 * (qnorm(hit_rate) + qnorm(fa_rate)),
+    accuracy  = (hits + (n_new - fa)) / (n_old + n_new)
+  )
+
+sdt |> select(participant, hit_rate, fa_rate, d_prime, criterion)</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <p>Each participant now has a <code>d_prime</code> (higher means sharper memory) and a <code>criterion</code> (positive means a cautious, says-new-when-unsure style; negative means a liberal one). The last line, which only selects columns to print, is not in the script file.</p>
+        <div class="demo-block" id="demo-sdt">
+          <p class="demo-title"><b>Try it: sensitivity and bias.</b> Move d′ and the criterion and watch the hit and false-alarm rates, the point on the plot from 5.10, and the numbers the R script would compute from 24 old and 24 new words.</p>
+        <div class="demo-controls">
+          <label for="sdt-d">d′ (sensitivity)</label>
+          <input type="range" id="sdt-d" min="0" max="3" step="0.05" value="1.5">
+          <output id="sdt-d-out" for="sdt-d"></output>
+          <label for="sdt-c">Criterion</label>
+          <input type="range" id="sdt-c" min="-1.5" max="1.5" step="0.05" value="0">
+          <output id="sdt-c-out" for="sdt-c"></output>
+        </div>
+        <div class="demo-split">
+          <div><div id="sdt-dist"></div><div class="readout" id="sdt-read"></div></div>
+          <div><div id="sdt-roc" style="max-width:300px"></div></div>
+        </div>
+        <pre class="listing" id="sdt-code" style="margin-top:1rem" aria-label="The R calculation with these numbers"></pre>
+        <div class="explain" id="sdt-explain"></div>
+      </div>
+
+        <h3 id="plot"><span class="secnum">5.10</span>Seeing it</h3>
+        <p>Plotting each participant as a point of hit rate against false-alarm rate makes the theory visible: anyone above the diagonal is discriminating old from new better than chance, and the further above, the larger the d-prime.</p>
+        <div class="rcell" id="rc-plot" data-packages="readr,dplyr,purrr,ggplot2" data-needs="rc-sdt">
+          <div class="editor-tab"><span class="file">recog_analysis.R, in your browser</span><span class="lang-tag">R</span></div>
+          <textarea class="rcell-code" rows="7" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="R code you can edit and run">ggplot(sdt, aes(fa_rate, hit_rate)) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey60") +
+  geom_point(size = 3, colour = "steelblue") +
+  coord_equal(xlim = c(0, 1), ylim = c(0, 1)) +
+  labs(x = "False-alarm rate", y = "Hit rate",
+       title = "Recognition memory: hits vs false alarms")</textarea>
+          <div class="rcell-bar">
+            <button type="button" class="btn primary rcell-run">Run</button>
+            <button type="button" class="btn rcell-reset">Reset code</button>
+            <span class="rcell-status" aria-live="polite"></span>
+          </div>
+          <div class="rcell-out"><pre class="rcell-text" aria-live="polite"></pre><div class="rcell-plots"></div></div>
+        </div>
+
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>For a real dataset, go trial-level with a probit mixed model, <code>glmer(said_old ~ status + (1 + status | participant), family = binomial(link = "probit"))</code>, where the status effect is d-prime and the intercept reflects bias. It uses every response and respects the nesting, rather than reducing each person to two numbers.</p>
+        </div>
+        <p>With both capstones in hand you have built a speeded task analysed with reaction times and a memory task analysed with signal detection, the two response types that cover most of cognitive psychology. A natural extension is to add a confidence rating at test (a Slider, as in Module 6) and plot an ROC curve from it.</p>
+
+        <h3 id="scripts"><span class="secnum">5.11</span>The complete scripts</h3>
+        <p>Use these to check your own version once you have built it, or to run the task with real participants. Keep <code>memory_words.csv</code> in the same folder as <code>recog_memory.py</code>.</p>
+        <ul class="downloads">
+          <li><a class="py" href="assets/downloads/recog_memory.py" download><code>recog_memory.py</code><span>The complete task, for the PsychoPy Coder</span></a></li>
+          <li><a class="d" href="assets/downloads/memory_words.csv" download><code>memory_words.csv</code><span>A starter pool of 60 words</span></a></li>
+          <li><a class="r" href="assets/downloads/recog_analysis.R" download><code>recog_analysis.R</code><span>The complete analysis, for RStudio</span></a></li>
+          <li><a class="d" href="assets/downloads/recog-example-data.zip" download><code>recog-example-data.zip</code><span>The twelve simulated participants, in a <code>data</code> folder</span></a></li>
+        </ul>
+      </section>
+
+
+      <section aria-labelledby="checks">
+        <h2 class="part" id="checks">Before you move on</h2>
+        <p>Tick each check as you complete it. Your ticks are kept in this browser only.</p>
+        <ul class="checklist" data-key="module-5" data-status="check-status-5">
+          <li><input type="checkbox" id="c5-0"><label for="c5-0">Your <code>recog_memory.py</code> runs a study phase and a test phase with a small pool.<span class="hint">Sections 5.2 to 5.6</span></label></li>
+          <li><input type="checkbox" id="c5-1"><label for="c5-1">Targets and lures never overlap, and you can say why that matters.<span class="hint">Section 5.3</span></label></li>
+          <li><input type="checkbox" id="c5-2"><label for="c5-2">Answering “old” to everything gives perfect hits and perfect false alarms.<span class="hint">Section 5.6</span></label></li>
+          <li><input type="checkbox" id="c5-3"><label for="c5-3"><code>recog_analysis.R</code> prints d′ and criterion per participant and draws the hit against false-alarm plot.<span class="hint">Sections 5.8 to 5.10</span></label></li>
+        </ul>
+        <p class="check-status" id="check-status-5" aria-live="polite"></p>
+
+        <nav class="pager" aria-label="Module navigation">
+          <a class="prev" href="module-4.html"><span class="dir">Previous</span><span class="t">Module 4: Capstone A, a serial reaction time task</span></a>
+          <a class="next" href="module-6.html"><span class="dir">Next</span><span class="t">Module 6: Questionnaires and rating data</span></a>
+        </nav>
+      </section>
+    </article>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <p>Coding Experiments in PsychoPy. Discipline of Psychology, Curtin University. Text licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js" data-manual></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-r.min.js"></script>
+<script src="assets/thumbs.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/demos.js"></script>
+<script src="assets/recog-task.js"></script>
+<script type="module" src="assets/rcell.js"></script>
+</body>
+</html>

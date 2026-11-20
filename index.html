@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coding Experiments in PsychoPy</title>
+<meta name="description" content="A hands-on introduction to scripting behavioural experiments in Python with PsychoPy, and analysing the data in R.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 22'><rect width='32' height='22' rx='2' fill='%23808080'/><circle cx='16' cy='11' r='4' fill='white'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="index.html"><span class="wordmark-glyph" aria-hidden="true"></span>Coding Experiments in PsychoPy</a>
+    <nav class="topnav" aria-label="Site">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="#modules">Modules</a>
+      <a href="troubleshooting.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero-band">
+  <section class="hero" aria-labelledby="title">
+    <div>
+      <h1 id="title">Coding Experiments in PsychoPy</h1>
+      <p class="lede">Learn to build psychology experiments by writing Python, then analyse the data they produce in R.</p>
+      <p class="meta">Written for PsychoPy Studio 2026.1.x on Python 3.10, and for R 4.6.x with RStudio. Discipline of Psychology, Curtin University.</p>
+      <p><a class="button" href="module-0.html">Start with Module 0</a> &nbsp; <a class="button secondary" href="#modules">See all modules</a></p>
+      <ol class="flow" aria-label="What you will do">
+        <li><span class="dot py">Py</span><div><b>Write the experiment in Python</b><span class="d">Windows, stimuli, keyboard timing, all in the PsychoPy Coder.</span></div></li>
+        <li><span class="dot csv">CSV</span><div><b>Collect one tidy row per trial</b><span class="d">Every script saves a CSV that is ready to analyse, like the one beside this.</span></div></li>
+        <li><span class="dot r">R</span><div><b>Analyse it in R</b><span class="d">Stack the files, clean the trials, and plot what happened.</span></div></li>
+      </ol>
+    </div>
+
+    <div class="demo">
+      <div class="ppwin">
+        <div class="ppwin-title"><span>PsychoPy window (browser imitation)</span><span class="ppwin-dots" aria-hidden="true"><span></span><span></span><span></span></span></div>
+        <div class="ppwin-screen" id="pp-screen" tabindex="0" role="application" aria-label="Reaction time demo. Press the space bar or tap to begin. Press Escape to stop."></div>
+      </div>
+      <div class="csvpanel">
+        <div class="csvpanel-head"><code>data/demo_RT.csv</code><span>one row per trial</span></div>
+        <pre id="csv-out" aria-live="polite"></pre>
+      </div>
+      <p class="demo-note">Browser timing is approximate. In the lab, PsychoPy times each response from the screen flip that shows the target, and Module 2 shows you how.</p>
+    </div>
+  </section>
+</div>
+
+  <section class="band" aria-labelledby="how">
+    <div class="band-inner twocol">
+      <div class="prose">
+        <h2 id="how">How to use this site</h2>
+        <p>These modules teach you to build psychology experiments by writing Python, using PsychoPy. We deliberately avoid the drag-and-drop Builder. Once you can read and write the code, nothing about an experiment is hidden from you. You will understand exactly what happens on every screen refresh, you can version-control your work, and you can fix anything that breaks rather than waiting for a menu to offer you an option.</p>
+        <p>Each module builds on the one before it. Type the code in yourself rather than copying and pasting. The friction of typing is where the learning happens, and the small errors you make and fix will teach you more than any amount of reading. For that reason the code on these pages has no copy button. The finished scripts for each capstone are available to download from that module, so you can check your own version against them.</p>
+
+        <h3>Working with an AI assistant</h3>
+        <p>You will almost certainly wonder whether you could reach for an AI assistant (Gemini, ChatGPT, Claude and so on) when something breaks, and you should. Used well it is like having a patient tutor next to you. Used badly it quietly does your learning for you, and you leave the session able to run a script you could not have written and cannot now change. The difference is entirely in how you ask. Treat the assistant as something to think with, not something to think for you, and three habits keep you on the right side of that line.</p>
+        <p><strong>First, you do the fixing.</strong> Ask the assistant to explain what the error means and why it happened, then make the change yourself and rerun it. Pasting its code back without reading it teaches you nothing except how to paste.</p>
+        <p><strong>Second, make it explain, not just repair.</strong> A one-line "here is the fix" is worth far less than "your keyboard clock was reset before the flip, which is why every time looked too long". If the explanation does not connect to something in these modules, that is your signal to go and read that part.</p>
+        <p><strong>Third, weigh the options.</strong> There is usually more than one way to fix or write something, and the assistant will happily hand you one without mentioning the others or telling you why that fix may not be the best option for your case. Ask what the alternatives are and what each costs, then decide. The decision is the part that is actually yours, and it is the part worth keeping.</p>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>The point is not to avoid AI, it is to stay the one who understands the experiment. Every fix should end with you able to explain what was wrong, why the change works, and what you chose not to do instead. If you cannot do that, you have collected a working line of code and missed the lesson it was carrying. The errors you make and fix still teach you the most with an assistant in the room, but only if the fixing, the understanding and the choosing stay with you.</p>
+        </div>
+      </div>
+
+      <div class="prose">
+        <h2>What you will see on each page</h2>
+        <p>Three kinds of box appear throughout.</p>
+        <div class="box try">
+          <span class="box-kind">Try this</span>
+          <p>A small task to attempt before reading on. Where there is an answer, it stays hidden until you open it, so try first.</p>
+          <details class="reveal"><summary>Show the answer</summary><p>Like this.</p></details>
+        </div>
+        <div class="box watch">
+          <span class="box-kind">Watch out</span>
+          <p>A common error or a subtle trap. Most of these have caught every one of us at least once.</p>
+        </div>
+        <div class="box forr">
+          <span class="box-kind">For R users</span>
+          <p>A pointer to how the data you collect will be read and analysed in R, so you design with the analysis in mind from the start.</p>
+        </div>
+        <p>Code looks like this, labelled with its language:</p>
+<pre class="code" data-lang="Python" data-file="example.py"><code class="language-python">from psychopy import visual, core
+
+win = visual.Window(size=[800, 600], units='height')
+core.wait(1.0)
+win.close()</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="modules" aria-labelledby="modules-title">
+    <div class="band-inner">
+      <div class="prose"><h2 id="modules-title">Modules</h2>
+        <p>Work through them in order. Each one ends at a point where you have something that runs.</p></div>
+      <ol class="route">
+        <li>
+          <span class="stop">0</span><span class="thumb" data-thumb="0"></span>
+          <div class="body"><h3><a href="module-0.html">Getting set up</a></h3>
+            <p>Ends with PsychoPy, R and RStudio installed, and each one checked.</p>
+            <div class="tags"><span class="lang setup">Setup</span><span class="status ready">Ready</span></div></div>
+        </li>
+        <li class="py">
+          <span class="stop">1</span><span class="thumb" data-thumb="1"></span>
+          <div class="body"><h3><a href="module-1.html">Your first Python script</a></h3>
+            <p>Ends with the Python you need, and a script that shows a window, a message and waits for a keypress.</p>
+            <div class="tags"><span class="lang py">Python</span><span class="status ready">Ready</span></div></div>
+        </li>
+        <li class="both">
+          <span class="stop">2</span><span class="thumb" data-thumb="2"></span>
+          <div class="body"><h3><a href="module-2.html">From one screen to a whole trial</a></h3>
+            <p>Ends with a small experiment that saves one tidy row per trial: the hand-over from Python to R.</p>
+            <div class="tags"><span class="lang py">Python</span><span class="status ready">Ready</span></div></div>
+        </li>
+        <li class="r">
+          <span class="stop">3</span><span class="thumb" data-thumb="3"></span>
+          <div class="body"><h3><a href="module-3.html">Your first R script</a></h3>
+            <p>Ends with a summary table and a plot, run in your browser.</p>
+            <div class="tags"><span class="lang r">R</span><span class="status ready">Ready</span></div></div>
+        </li>
+        <li class="both">
+          <span class="stop">4</span><span class="thumb" data-thumb="4"></span>
+          <div class="body"><h3><a href="module-4.html">Capstone A: a serial reaction time task</a></h3>
+            <p>Ends with a working task, its data, a learning curve and the sequence cost.</p>
+            <div class="tags"><span class="lang py">Python</span><span class="lang r">R</span><span class="status ready">Ready</span></div></div>
+        </li>
+        <li class="both">
+          <span class="stop">5</span><span class="thumb" data-thumb="5"></span>
+          <div class="body"><h3><a href="module-5.html">Capstone B: a recognition memory task</a></h3>
+            <p>Ends with hits, false alarms, d′ and criterion for every participant.</p>
+            <div class="tags"><span class="lang py">Python</span><span class="lang r">R</span><span class="status ready">Ready</span></div></div>
+        </li>
+        <li class="both">
+          <span class="stop">6</span><span class="thumb" data-thumb="6"></span>
+          <div class="body"><h3><a href="module-6.html">Questionnaires and rating data</a></h3>
+            <p>Ends with a six-item screener and a 50-item personality questionnaire, both scored in R, including reverse-keyed items.</p>
+            <div class="tags"><span class="lang py">Python</span><span class="lang r">R</span><span class="status ready">Ready</span></div></div>
+        </li>
+      </ol>
+      <div class="route-ref">
+        <div><h3><a href="troubleshooting.html">Troubleshooting</a></h3><p>The errors that catch almost everyone, searchable by the message you see.</p></div>
+        <div><h3><a href="where-next.html">Where to go next</a></h3><p>Books, courses and guides for going further, including running studies online.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <p>Coding Experiments in PsychoPy. Discipline of Psychology, Curtin University. Text licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</p>
+    <p>Use of generative AI: Claude (Anthropic) helped with implementing this website and with checking the text for consistency of language. The choice of content and its accuracy remain the author's responsibility.</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js" data-manual></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="assets/thumbs.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>
